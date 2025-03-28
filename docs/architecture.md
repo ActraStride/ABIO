@@ -1,13 +1,32 @@
-abio/
-├── api/             (Mantiene la lógica de acceso a la API Gemini)
-├── chat/            (Mantiene la lógica central del chat)
-├── services/       (NUEVO - Capa de Servicios)
-│   ├── __init__.py
-│   ├── chat_service.py  (Implementa la lógica de la API del chat)
-├── config/
-├── ui/              (La UI se convierte en un cliente del servicio)
-│   ├── __init__.py
-│   └── console_ui.py (Ahora consume la capa de servicios)
-├── utils/
+.
+├── data
+├── docs
+│   └── architecture.md
+├── logs
 ├── main.py
-└── requirements.txt
+├── requirements.txt
+├── src
+│   ├── chat
+│   │   ├── chat_session.py
+│   │   ├── __init__.py
+│   │   └── message.py
+│   ├── clients
+│   │   ├── gemini_api_client.py
+│   │   └── __init__.py
+│   ├── config
+│   │   ├── config.py
+│   │   └── __init__.py
+│   ├── context
+│   │   ├── context_manager.py
+│   │   └── __init__.py
+│   ├── errors
+│   │   ├── core.py
+│   │   └── __init__.py
+│   ├── services
+│   │   ├── abio_service.py
+│   │   └── __init__.py
+│   └── utils
+│       ├── helpers.py
+│       ├── __init__.py
+│       └── setup_logging.py
+└── tests
