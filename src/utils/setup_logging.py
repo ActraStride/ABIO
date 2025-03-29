@@ -152,6 +152,7 @@ def setup_logging(log_level: str, project_root: Path = None) -> None:
             "Logging configured successfully. File: %s", log_file
         )
         
+        print(f"Log directory: {log_dir}")
     
     except ValueError as ve:
         logging.error("Invalid log level provided: %s", ve)

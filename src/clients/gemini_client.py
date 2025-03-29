@@ -27,22 +27,22 @@ import textwrap
 import logging
 import os
 from dotenv import load_dotenv
-from typing import List
+from typing import List, Optional
 from IPython.display import Markdown
 
 class GeminiClient:
-    def __init__(self, logger: logging.Logger = None):
+    def __init__(self, logger: Optional[logging.Logger] = None):
         """
         Initializes the Gemini client with the provided logger.
         
         Args:
-            logger (logging.Logger, optional): Logger instance to use. Defaults to None.
+            logger (Optional[logging.Logger]): Logger instance to use. Defaults to None.
         """
         load_dotenv()  # Load environment variables from .env file
-        self.api_key = os.getenv("API_KEY")
+        self.api_key: str = os.getenv("API_KEY")  # Ensure type is explicitly defined
         if not self.api_key:
             raise ValueError("API key must be provided in the .env file.")
-        self.logger = logger or logging.getLogger(__name__)
+        self.logger: logging.Logger = logger or logging.getLogger(__name__)
         self.logger.info("Initializing GeminiClient with API key from .env.")
         self._configure_api()
 
