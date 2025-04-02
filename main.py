@@ -15,25 +15,14 @@ def main():
         logger.info("Inicializando cliente de Gemini...")
         client = GeminiClient(logger=logger)
         
-        # Listar modelos disponibles
-        models = client.list_models()
-        logger.info("Modelos disponibles: %s", models)
-        print("Modelos disponibles:")
-        for model in models:
-            print(f"- {model}")
-        
         # Generar texto con un modelo específico
-        if models:
-            prompt = "Escribe un poema sobre la tecnología."
-            logger.info("Generando texto con el modelo: %s", models[17])
-            print("\nGenerando texto con el modelo:", models[17])
-            response = client.generate_text(prompt=prompt, model_name=models[17])
-            logger.info("Texto generado: %s", response)
-            print("\nTexto generado:")
-            print(response)
-        else:
-            logger.warning("No hay modelos disponibles para generar contenido.")
-            print("No hay modelos disponibles para generar contenido.")
+        prompt = input("Introduce el prompt para generar texto: ")
+        logger.info("Generando texto con el modelo: %s", "models/gemini-1.5-flash")
+        print("\nGenerando texto...")
+        response = client.generate_text(prompt=prompt, model_name="models/gemini-1.5-flash")
+        logger.info("Texto generado: %s", response)
+        print("\nTexto generado:")
+        print(response)
     except Exception as e:
         logger.error("Error durante la prueba del cliente de Gemini: %s", e)
 
