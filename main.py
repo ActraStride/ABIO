@@ -22,7 +22,7 @@ def main():
         response = client.generate_text(prompt=prompt, model_name="models/gemini-1.5-flash")
         logger.info("Texto generado: %s", response)
         print("\nTexto generado:")
-        print(response)
+        print(response["generated_text"])
     except Exception as e:
         logger.error("Error durante la prueba del cliente de Gemini: %s", e)
 

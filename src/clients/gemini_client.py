@@ -27,7 +27,7 @@ import textwrap
 import logging
 import os
 from dotenv import load_dotenv
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 from IPython.display import Markdown
 
 DEFAULT_MODEL_NAME = "gemini-1.5-flash"
@@ -118,7 +118,7 @@ class GeminiClient:
             self.logger.error("Error counting tokens: %s", e)
             raise RuntimeError("Failed to count tokens.") from e
 
-    def generate_text(self, prompt: str, model_name: str = DEFAULT_MODEL_NAME) -> str:
+    def generate_text(self, prompt: str, model_name: str = DEFAULT_MODEL_NAME) -> Dict[str, Any]:
         """
         Generates text based on a prompt using the specified model and logs token counts.
         
@@ -127,7 +127,7 @@ class GeminiClient:
             model_name (str): Name of the model to use (default: DEFAULT_MODEL_NAME).
         
         Returns:
-            str: Generated response as text.
+            Dict[str, Any]: A dictionary containing the generated text, token counts, and metadata.
 
         Raises:
             ValueError: If the prompt is empty or invalid.
@@ -153,7 +153,15 @@ class GeminiClient:
             self.logger.info("Response token count: %d", response_tokens)
 
             self.logger.info("Text generation successful.")
-            return response.text
+
+            # Return a detailed response
+            return {
+                "generated_text": response.text,
+                "prompt_tokens": prompt_tokens,
+                "response_tokens": response_tokens,
+                "model_name": model_name,
+                "metadata": response.metadata if hasattr(response, "metadata") else None
+            }
         except genai.exceptions.ModelNotFoundError as e:
             self.logger.error("Model '%s' not found: %s", model_name, e)
             raise RuntimeError(f"Model '{model_name}' not found.") from e
