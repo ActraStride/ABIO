@@ -30,6 +30,8 @@ from dotenv import load_dotenv
 from typing import List, Optional, Dict, Any
 from IPython.display import Markdown
 
+from src.models.raw_response import RawResponse
+
 DEFAULT_MODEL_NAME = "gemini-1.5-flash"
 
 class GeminiClient:
@@ -155,13 +157,14 @@ class GeminiClient:
             self.logger.info("Text generation successful.")
 
             # Return a detailed response
-            return {
-                "generated_text": response.text,
-                "prompt_tokens": prompt_tokens,
-                "response_tokens": response_tokens,
-                "model_name": model_name,
-                "metadata": response.metadata if hasattr(response, "metadata") else None
-            }
+            return RawResponse(
+                generated_text=response.text,
+                prompt_tokens=prompt_tokens,
+                response_tokens=response_tokens,
+                model_name=model_name,
+                metadata=response.metadata if hasattr(response, "metadata") else None
+            )
+        
         except genai.exceptions.ModelNotFoundError as e:
             self.logger.error("Model '%s' not found: %s", model_name, e)
             raise RuntimeError(f"Model '{model_name}' not found.") from e
