@@ -1,3 +1,4 @@
 google-generativeai
+anthropic
 python-dotenv
 ipython
