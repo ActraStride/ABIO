@@ -48,6 +48,7 @@ class GeminiClient:
             raise ValueError("API key must be provided in the .env file.")
         self.logger: logging.Logger = logger or logging.getLogger(__name__)
         self.logger.info("Initializing GeminiClient with API key from .env.")
+        self._grpc_channel = None  # Placeholder for gRPC channel (if applicable)
         self._configure_api()
 
     def _configure_api(self) -> None:
@@ -120,7 +121,7 @@ class GeminiClient:
             self.logger.error("Error counting tokens: %s", e)
             raise RuntimeError("Failed to count tokens.") from e
 
-    def generate_text(self, prompt: str, model_name: str = DEFAULT_MODEL_NAME) -> Dict[str, Any]:
+    def generate_text(self, prompt: str, model_name: str = DEFAULT_MODEL_NAME) -> RawResponse:
         """
         Generates text based on a prompt using the specified model and logs token counts.
         
@@ -190,3 +191,13 @@ class GeminiClient:
         except RuntimeError:
             self.logger.warning("Could not validate model '%s'.", model_name)
             return False
+
+    def close(self) -> None:
+        """
+        Placeholder for SDK cleanup if applicable.
+        """
+        try:
+            self.logger.info("Performing cleanup for Gemini SDK.")
+            # Add any SDK-specific cleanup logic here if needed in the future.
+        except Exception as e:
+            self.logger.error("Error during SDK cleanup: %s", e)
