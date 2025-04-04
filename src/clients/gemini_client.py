@@ -35,19 +35,17 @@ from src.models.raw_response import RawResponse
 DEFAULT_MODEL_NAME = "gemini-1.5-flash"
 
 class GeminiClient:
-    def __init__(self, logger: Optional[logging.Logger] = None):
+    def __init__(self):
         """
-        Initializes the Gemini client with the provided logger.
-        
-        Args:
-            logger (Optional[logging.Logger]): Logger instance to use. Defaults to None.
+        Initializes the Gemini client.
         """
+        self.logger = logging.getLogger(__name__)  # Create a logger for this class
+        self.logger.info("Initializing GeminiClient.")
         load_dotenv()  # Load environment variables from .env file
-        self.api_key: str = os.getenv("GEMINI_API_KEY")  # Ensure type is explicitly defined
+        self.api_key: str = os.getenv("GEMINI_API_KEY")
         if not self.api_key:
+            self.logger.error("API key not found in .env file.")
             raise ValueError("API key must be provided in the .env file.")
-        self.logger: logging.Logger = logger or logging.getLogger(__name__)
-        self.logger.info("Initializing GeminiClient with API key from .env.")
         self._grpc_channel = None  # Placeholder for gRPC channel (if applicable)
         self._configure_api()
 

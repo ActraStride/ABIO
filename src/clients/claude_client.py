@@ -29,19 +29,17 @@ from typing import Optional
 DEFAULT_MODEL_NAME = "claude-3-7"
 
 class ClaudeClient:
-    def __init__(self, logger: Optional[logging.Logger] = None):
+    def __init__(self):
         """
-        Initializes the Claude client with the provided logger.
-        
-        Args:
-            logger (Optional[logging.Logger]): Logger instance to use. Defaults to None.
+        Initializes the Claude client.
         """
+        self.logger = logging.getLogger(__name__)  # Create a logger for this class
+        self.logger.info("Initializing ClaudeClient.")
         load_dotenv()  # Load environment variables from .env file
-        self.api_key: str = os.getenv("ANTHROPIC_API_KEY")  # Ensure type is explicitly defined
+        self.api_key: str = os.getenv("ANTHROPIC_API_KEY")
         if not self.api_key:
+            self.logger.error("API key not found in .env file.")
             raise ValueError("API key must be provided in the .env file.")
-        self.logger: logging.Logger = logger or logging.getLogger(__name__)
-        self.logger.info("Initializing ClaudeClient with API key from .env.")
         self.client = anthropic.Anthropic(api_key=self.api_key)
 
     def generate_text(self, prompt: str, model_name: str = DEFAULT_MODEL_NAME, max_tokens: int = 1024) -> str:
@@ -61,6 +59,7 @@ class ClaudeClient:
             RuntimeError: If text generation fails.
         """
         if not prompt.strip():
+            self.logger.error("Prompt is empty or whitespace.")
             raise ValueError("Prompt cannot be empty or whitespace.")
         
         self.logger.info("Generating text using model '%s'.", model_name)
@@ -71,6 +70,7 @@ class ClaudeClient:
                 messages=[{"role": "user", "content": prompt}]
             )
             if not response or not response.get("completion"):
+                self.logger.error("Received empty response from the model.")
                 raise RuntimeError("Received empty response from the model.")
             self.logger.info("Text generation successful.")
             return response["completion"]

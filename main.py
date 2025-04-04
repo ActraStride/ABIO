@@ -14,12 +14,12 @@ def main():
     try:
         # Inicializar el cliente de Gemini
         logger.info("Inicializando cliente de Gemini...")
-        client = GeminiClient(logger=logger)
+        client = GeminiClient()  # Logger interno gestionado por la clase
         
         # Crear una nueva sesión de chat
         session_id = "12345"  # Puedes generar un ID único si lo prefieres
         model_name = "models/gemini-1.5-flash"
-        chat_session = ChatSession(session_id=session_id, model_name=model_name)
+        chat_session = ChatSession(session_id=session_id, model_name=model_name, client=client)
         logger.info("Sesión de chat iniciada con ID: %s", session_id)
         
         # Iniciar el bucle de chat
@@ -35,19 +35,10 @@ def main():
             
             # Generar respuesta del modelo
             logger.info("Generando respuesta del modelo...")
-            response = client.generate_text(prompt=user_input, model_name=model_name)
-            # Acceder al texto generado correctamente
-            if hasattr(response, "generated_text"):
-                generated_text = response.generated_text
-            else:
-                generated_text = "Error: No se pudo generar una respuesta."
-            
-            
-            # Agregar la respuesta del modelo a la sesión
-            chat_session.add_message(role="assistant", content=generated_text)
+            response_message = chat_session.generate_response(prompt=user_input)
             
             # Mostrar la respuesta al usuario
-            print(f"\nGemini: {generated_text}")
+            print(f"\nGemini: {response_message.content}")
         
         # Mostrar el historial de la sesión al final
         print("\nHistorial de la sesión:")
@@ -60,7 +51,7 @@ def main():
 if __name__ == "__main__":
     client = None
     try:
-        client = GeminiClient(logger=logging.getLogger("GeminiChat"))
+        client = GeminiClient()  # Logger interno gestionado por la clase
         main()
     except Exception as e:
         logging.getLogger("GeminiChat").error("Unexpected error: %s", e)

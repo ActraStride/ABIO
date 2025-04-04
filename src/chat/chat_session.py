@@ -23,6 +23,8 @@ Dependencies:
 
 from typing import List
 from src.models import Message  # Import Message from the models module
+from src.clients.gemini_client import GeminiClient
+import logging
 
 class ChatSession:
     """
@@ -33,16 +35,20 @@ class ChatSession:
         model_name (str): The name of the AI model used for generating responses.
         messages (List[Message]): A list of messages exchanged in the session.
     """
-    def __init__(self, session_id: str, model_name: str):
+    def __init__(self, session_id: str, model_name: str, client: GeminiClient):
         """
         Initializes a new ChatSession.
 
         Args:
             session_id (str): A unique identifier for the session.
             model_name (str): The name of the AI model to use.
+            client (GeminiClient): The client used to interact with the AI model.
         """
+        self.logger = logging.getLogger(__name__)  # Create a logger for this class
+        self.logger.info("Initializing ChatSession with session_id: %s and model_name: %s", session_id, model_name)
         self.session_id = session_id  # Unique identifier for the session
         self.model_name = model_name  # Name of the AI model used
+        self.client = client
         self.messages: List[Message] = []  # List to store the message history
 
     def add_message(self, role: str, content: str) -> None:
@@ -53,6 +59,7 @@ class ChatSession:
             role (str): The role of the sender (e.g., "user", "assistant", "system").
             content (str): The text content of the message.
         """
+        self.logger.debug("Adding message with role: %s, content: %s", role, content)
         message = Message(role=role, content=content)
         self.messages.append(message)
 
@@ -63,21 +70,23 @@ class ChatSession:
         Returns:
             List[Message]: A list of all messages in the session.
         """
+        self.logger.debug("Retrieving message history. Total messages: %d", len(self.messages))
         return self.messages
 
-    def generate_response(self) -> Message:
+    def generate_response(self, prompt: str) -> Message:
         """
-        Generates a response from the AI model based on the current session context.
+        Generates a response using the AI model via the client.
+
+        Args:
+            prompt (str): The input prompt for the AI model.
 
         Returns:
             Message: The AI-generated response as a Message object.
-
-        Note:
-            This is a placeholder method. Integration with the actual AI model
-            should be implemented here.
         """
-        # Placeholder logic for generating a response
-        response_content = "This is a placeholder response."
-        response = Message(role="assistant", content=response_content)
-        self.add_message(role="assistant", content=response_content)
-        return response
+        self.logger.info("Generating response for prompt: %s", prompt)
+        response = self.client.generate_text(prompt=prompt, model_name=self.model_name)
+        generated_text = response.generated_text if hasattr(response, "generated_text") else "Error: No se pudo generar una respuesta."
+        self.logger.info("Generated response: %s", generated_text)
+        response_message = Message(role="assistant", content=generated_text)
+        self.add_message(role="assistant", content=generated_text)
+        return response_message
