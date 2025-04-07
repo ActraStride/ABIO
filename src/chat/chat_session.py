@@ -86,9 +86,23 @@ class ChatSession:
             Message: The AI-generated response as a Message object.
         """
         self.logger.info("Generating response for prompt: %s", prompt)
-        response = self.client.generate_text(prompt=prompt, model_name=self.model_name)
+
+        # Retrieve the conversation history
+        history = self.get_history()
+        history_text = "\n".join(
+            f"{message.role.capitalize()}: {message.content}" for message in history
+        )
+
+        # Combine history with the current prompt
+        full_prompt = f"{history_text}\nUser: {prompt}"
+
+        # Generate response using the AI model
+        response = self.client.generate_text(prompt=full_prompt, model_name=self.model_name)
         generated_text = response.generated_text if hasattr(response, "generated_text") else "Error: No se pudo generar una respuesta."
         self.logger.info("Generated response: %s", generated_text)
+
+        # Create a Message object for the response
         response_message = Message(role="assistant", content=generated_text)
         self.add_message(role="assistant", content=generated_text)
+
         return response_message
