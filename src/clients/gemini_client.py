@@ -146,6 +146,7 @@ class GeminiClient:
             # Generate text
             model = genai.GenerativeModel(model_name)
             response = model.generate_content(prompt)
+            self.logger.info("Text generation response: %s", response)
             if not response or not response.text:
                 raise RuntimeError("Received empty response from the model.")
             

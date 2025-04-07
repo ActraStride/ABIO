@@ -35,14 +35,12 @@ class Message(BaseModel):
         role (str): The role of the sender (e.g., "user", "assistant", "system").
         content (str): The text content of the message.
         timestamp (Optional[datetime]): The time when the message was created.
+        tokens (Optional[int]): The number of tokens in the message content.
     """
     role: str  # Role of the sender (e.g., "user", "assistant", "system")
     content: str  # The text content of the message
     timestamp: Optional[datetime] = None  # Timestamp of the message (optional)
-
-    """
-    ?????
-    """
+    tokens: Optional[int] = None  # Number of tokens in the message content (optional)
 
     class Config:
         """
