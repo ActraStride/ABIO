@@ -11,15 +11,16 @@ class ContextManager:
     """
     Main class for managing the conversational context.
     """
-    def __init__(self, max_messages: Optional[int] = None):
+    def __init__(self, max_messages: Optional[int] = None, pretraining_prompt: Optional[List[Message]] = None):
         """
         Initializes the ContextManager.
 
         Args:
             max_messages (Optional[int]): Maximum number of messages to retain in the context.
                                           If None, no limit is applied.
+            pretraining_prompt (Optional[List[Message]]): A list of pretraining messages to initialize the context.
         """
-        self.messages: List[Message] = []  # Stores the conversation history as Message objects
+        self.messages: List[Message] = pretraining_prompt or []  # Initialize with pretraining messages
         self.embedding_context = None  # Embedding-related operations
         self.max_messages = max_messages
 
@@ -60,9 +61,9 @@ class ContextManager:
 
     def clear_context(self):
         """
-        Clears the entire conversation context.
+        Clears the entire conversation context, except for the pretraining messages.
         """
-        self.messages.clear()
+        self.messages = self.messages[:len(self.messages) - len(self.messages)]
 
     def _trim_messages(self):
         """
