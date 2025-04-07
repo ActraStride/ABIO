@@ -4,8 +4,8 @@ Module: context_manager
 Manages the conversational context for the AI agent and delegates embedding-related tasks.
 """
 
-from typing import List, Dict, Optional
-
+from typing import List, Optional
+from src.models.message import Message  # Import the Message model
 
 class ContextManager:
     """
@@ -19,30 +19,29 @@ class ContextManager:
             max_messages (Optional[int]): Maximum number of messages to retain in the context.
                                           If None, no limit is applied.
         """
-        self.messages: List[Dict[str, str]] = []  # Stores the conversation history
+        self.messages: List[Message] = []  # Stores the conversation history as Message objects
         self.embedding_context = None  # Embedding-related operations
         self.max_messages = max_messages
 
-    def add_message(self, role: str, content: str):
+    def add_message(self, message: Message):
         """
         Adds a message to the conversation context.
 
         Args:
-            role (str): The role of the speaker (e.g., "user", "assistant").
-            content (str): The content of the message.
+            message (Message): The message to add.
 
         Raises:
-            ValueError: If role or content is empty.
+            ValueError: If the message is invalid.
         """
-        if not role.strip():
+        if not message.role.strip():
             raise ValueError("Role cannot be empty or whitespace.")
-        if not content.strip():
+        if not message.content.strip():
             raise ValueError("Content cannot be empty or whitespace.")
 
-        self.messages.append({"role": role, "content": content})
+        self.messages.append(message)
         self._trim_messages()
 
-    def get_recent_messages(self, n: int = 5) -> List[Dict[str, str]]:
+    def get_recent_messages(self, n: int = 5) -> List[Message]:
         """
         Retrieves the most recent messages from the conversation.
 
@@ -50,7 +49,7 @@ class ContextManager:
             n (int): The number of recent messages to retrieve.
 
         Returns:
-            List[Dict[str, str]]: A list of recent messages.
+            List[Message]: A list of recent messages.
 
         Raises:
             ValueError: If n is less than or equal to 0.
