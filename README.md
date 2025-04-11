@@ -1,8 +1,12 @@
-# ABIO - Chatbot with Generative Models
+<h1 align="center">🤖 ABIO — Chatbot with Generative Models</h1>
 
-ABIO is a project designed to manage chat sessions with advanced generative models like Gemini and Claude. This system includes functionalities to handle conversation context, log recording, and integrations with generative model APIs.
+<p align="center">
+  A conversational AI platform integrating <strong>Gemini</strong> and <strong>Claude</strong> APIs, with context tracking, logging, and robust modular design.
+</p>
 
-## Project Structure
+---
+
+## 📁 Project Structure
 
 ```
 .
@@ -11,85 +15,125 @@ ABIO is a project designed to manage chat sessions with advanced generative mode
 ├── logs/                  # Generated log files
 ├── src/                   # Main source code
 │   ├── chat/              # Chat session management
-│   ├── clients/           # Clients to interact with external APIs
+│   ├── clients/           # API clients for Gemini & Claude
 │   ├── config/            # Project configuration
-│   ├── context/           # Conversational context management
-│   ├── errors/            # Custom error handling
+│   ├── context/           # Conversation context handling
+│   ├── errors/            # Custom error types
 │   ├── models/            # Data models (Pydantic)
-│   ├── services/          # Additional services
-│   └── utils/             # General utilities
+│   ├── services/          # Auxiliary services
+│   └── utils/             # Utility functions (e.g., logging)
 ├── tests/                 # Unit tests
 ├── main.py                # Main entry point
-├── requirements.txt       # Project dependencies
-├── Dockerfile             # Docker container configuration
-├── docker-compose.yml     # Docker services orchestration
-└── .env                   # Environment variables
+├── requirements.txt       # Python dependencies
+├── Dockerfile             # Docker container config
+├── docker-compose.yml     # Docker orchestration
+└── .env                   # API keys and environment vars
 ```
 
-## Prerequisites
+---
 
-- **Python 3.10 or higher**
-- **Docker** (optional, for running in containers)
-- **API Keys** for Gemini and Claude services, configured in the `.env` file.
+## ⚙️ Prerequisites
 
-### Installation
+- Python **3.10+**
+- Optional: **Docker** (for containerized deployment)
+- API Keys for:
+  - 🔑 **Gemini**
+  - 🔐 **Claude (Anthropic)**
 
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/your_user/abio.git
-   cd abio
-   ```
+> Store your keys securely in a `.env` file.
 
-2. Create a virtual environment and install the dependencies:
-   ```bash
-   python -m venv venv
-   source venv/bin/activate  # On Windows: venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
+---
 
-3. Configure the environment variables in a `.env` file:
-   ```
-   GEMINI_API_KEY=your_gemini_api_key
-   ANTHROPIC_API_KEY=your_claude_api_key
-   ```
+## 🚀 Installation
 
-### Usage
+### 1. Clone the Repository
 
-Run the main file to start a chat session:
+```bash
+git clone https://github.com/your_user/abio.git
+cd abio
+```
+
+### 2. Set Up Your Environment
+
+```bash
+python -m venv venv
+source venv/bin/activate     # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+### 3. Add Your API Keys
+
+Create a `.env` file in the root directory:
+
+```env
+GEMINI_API_KEY=your_gemini_api_key
+ANTHROPIC_API_KEY=your_claude_api_key
+```
+
+---
+
+## 💬 Usage
+
+Start a chat session with:
+
 ```bash
 python main.py
 ```
 
-### Testing
+---
 
-Run the unit tests with:
+## 🧪 Running Tests
+
+Run all unit tests with:
+
 ```bash
 python -m unittest discover -s tests
 ```
 
-### Using Docker
+---
 
-1. Build the Docker image:
-   ```bash
-   docker-compose build
-   ```
+## 🐳 Docker Deployment
 
-2. Run the services:
-   ```bash
-   docker-compose up
-   ```
+### Build the Image
 
-## Main Features
+```bash
+docker-compose build
+```
 
-- **Chat Session Management**: Handling messages and conversational context with [`ChatSession`](src/chat/chat_session.py).
-- **API Integration**: Clients to interact with Gemini ([`GeminiClient`](src/clients/gemini_client.py)) and Claude ([`ClaudeClient`](src/clients/claude_client.py)).
-- **Context Management**: Control of message history with [`ContextManager`](src/context/context_manager.py).
-- **Log Recording**: Advanced log configuration with [`setup_logging`](src/utils/setup_logging.py).
+### Run the Services
 
-## Contributions
+```bash
+docker-compose up
+```
 
-Contributions are welcome. Please open an issue or submit a pull request to discuss any changes.
+---
 
-## License
+## 🌟 Key Features
 
-This project is licensed under the MIT License. See the `LICENSE` file for more details.
+- 🔄 **Chat Session Management**  
+  Manage conversations with `ChatSession` in [`chat_session.py`](src/chat/chat_session.py).
+
+- 🌐 **Generative API Integration**  
+  Use `GeminiClient` and `ClaudeClient` for advanced AI model interaction.
+
+- 🧠 **Context Memory**  
+  Maintain message history with `ContextManager`.
+
+- 📝 **Logging System**  
+  Record detailed logs via `setup_logging.py`.
+
+---
+
+## 🤝 Contributions
+
+Contributions are welcome!  
+Feel free to fork the repo and submit pull requests.
+
+> Please open an issue first to discuss major changes or new features.
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License**.  
+See the [LICENSE](LICENSE) file for details.
