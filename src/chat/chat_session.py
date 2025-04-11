@@ -31,10 +31,6 @@ class ChatSession:
     """
     Manages a chat session, including message history and interactions with an AI model.
 
-    Attributes:
-        session_id (str): A unique identifier for the chat session.
-        model_name (str): The name of the AI model used for generating responses.
-        messages (List[Message]): A list of messages exchanged in the session.
     """
     def __init__(self, session_id: str, model_name: str, client: GeminiClient, max_messages: int = 50):
         """
