@@ -1,0 +1,24 @@
+# General configuration file for the AI agent - config.abio
+
+agent:
+  name: "<AGENT_NAME>"                          # (str) Name of the AI agent.
+  version: "<VERSION>"                          # (str) Version number of the agent (e.g., 1.0.0).
+  description: "<AGENT_DESCRIPTION>"            # (str) Brief description of the agent’s functionality.
+  environment: "<development|production|test>"  # (str) Environment type the agent is running in.
+
+chat:
+  message_limit: <CONTEXT_MESSAGE_LIMIT>        # (int) Maximum number of messages to retain in context window. e.g., 50
+  default_model: "<AI_MODEL_NAME>"              # (str) Name of the AI model used by default. e.g., gemini-1.5-flash
+  temperature: <FLOAT_VALUE_BETWEEN_0_AND_1>    # (float) Sampling temperature for randomness. Higher = more creative.
+  top_p: <FLOAT_VALUE_BETWEEN_0_AND_1>          # (float) Nucleus sampling parameter. Lower = more focused outputs.
+
+  pretraining_prompts:
+    - role: "system"                            # (str) Role of the speaker. "system" is used to define initial behavior.
+      content: "<INITIAL_SYSTEM_MESSAGE>"       # (str) Message setting up system instructions or rules for the AI.
+    - role: "user"                              # (str) Role of the user, starting the first interaction.
+      content: "<INITIAL_USER_QUESTION>"        # (str) Initial prompt or question given by the user to guide the agent.
+
+meta:
+  created_by: "<YOUR_NAME>"                     # (str) Author or creator of the configuration file.
+  created_at: "<CREATION_DATE>"                 # (str) Date when the configuration file was created. e.g., 2025-04-13
+  last_updated: "<LAST_UPDATE_DATE>"            # (str) Date of the last edit or modification to this file.
