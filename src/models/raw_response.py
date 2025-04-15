@@ -42,3 +42,9 @@ class RawResponse(BaseModel):
     response_tokens: int
     model_name: str
     metadata: Optional[Any] = None
+
+    class Config:
+        """
+        Pydantic configuration for the RawResponse model.
+        """
+        from_attributes = True
