@@ -16,13 +16,13 @@ Example:
 """
 
 import logging
+import yaml
 from typing import Optional
-
-# Suponiendo que AbioConfig es una clase o tipo de datos definido en otro lugar
-# from src.models.abio_config import AbioConfig  # Descomentar si tienes una clase AbioConfig definida
+from pydantic import ValidationError
+from src.models import AbioConfig
 
 class ConfigManager:
-    def __init__(self, config_path: Optional[str] = None, config: Optional['AbioConfig'] = None): # Usar string literal para forward reference si AbioConfig no está definido aún
+    def __init__(self, config_path: Optional[str] = None, config: Optional[AbioConfig] = None): 
         """
         Initializes the ConfigManager.
 
@@ -67,7 +67,7 @@ class ConfigManager:
         self.logger.info("ConfigManager initialized successfully.")
 
 
-    def get_config(self) -> 'AbioConfig': # Usar string literal para forward reference si AbioConfig no está definido aún
+    def get_config(self) -> AbioConfig: 
         """
         Returns the current configuration object.
 
@@ -76,7 +76,7 @@ class ConfigManager:
         """
         return self._config
 
-    def update_config(self, new_config: 'AbioConfig') -> None: # Usar string literal para forward reference si AbioConfig no está definido aún
+    def update_config(self, new_config: AbioConfig) -> None: 
         """
         Updates the current configuration object with a new configuration.
 
@@ -128,55 +128,65 @@ class ConfigManager:
 
 
     # Private methods - starting with single underscore '_' is more common in Python for internal methods
-    def _load_from_file(self, path: str) -> 'AbioConfig': # Usar string literal para forward reference si AbioConfig no está definido aún
+    def _load_from_file(self, path: str) -> AbioConfig:
         """
-        Loads and validates configuration from a YAML file.
+        Loads and validates configuration from a YAML file using model_validate.
 
         Args:
-            path (str): Path to the YAML configuration file.
+            path (str): The path to the YAML configuration file.
 
         Returns:
-            AbioConfig: The loaded and validated configuration object.
+            AbioConfig: An instance of AbioConfig with the loaded configuration.
 
         Raises:
-            FileNotFoundError: If the file specified by `path` does not exist.
-            ValueError: If there is an error parsing the YAML file or if the configuration is invalid.
-            # Potentially other exceptions depending on YAML library and validation logic
+            FileNotFoundError: If the configuration file does not exist.
+            YAMLError: If the YAML file is not properly formatted.
+            ValidationError: If the loaded data does not match the AbioConfig schema.
         """
-        self.logger.debug("Loading configuration from file: %s", path) # Debug level logging
         try:
-            # Implementation to load YAML file and parse into AbioConfig object
-            # Example (pseudocode - replace with actual YAML loading):
-            # with open(path, 'r') as f:
-            #     config_dict = yaml.safe_load(f)
-            #     config = AbioConfig.from_dict(config_dict) # Assuming a from_dict method in AbioConfig
-            #     # ... validation of config ...
-            #     return config
-            pass # Placeholder for implementation
+            self.logger.debug(f"Loading configuration from file: {path}")
+            with open(path, 'r') as f:
+                config_dict = yaml.safe_load(f) # Use safe_load to prevent arbitrary code execution
         except FileNotFoundError:
-            self.logger.error("Configuration file not found: %s", path)
-            raise # Re-raise to maintain correct exception type
-        except Exception as e: # Catch-all for YAML parsing and validation errors
-            self.logger.error("Error loading or parsing configuration file %s: %s", path, e)
-            raise ValueError(f"Error loading configuration from {path}: {e}") from e
+            self.logger.error(f"Configuration file not found at: {path}")
+            raise FileNotFoundError(f"Configuration file not found at: {path}")
+        except yaml.YAMLError as e:
+            self.logger.error(f"Error parsing YAML file at {path}: {e}")
+            raise yaml.YAMLError(f"Error parsing YAML file at {path}: {e}")
 
+        try:
+            config = AbioConfig.model_validate(config_dict) # Use model_validate instead of parse_obj
+            self.logger.info("Configuration loaded and validated successfully.")
+            self.logger.debug(f"Loaded configuration: {config}") # Log the loaded config in debug mode
+            return config
+        except ValidationError as e:
+            self.logger.error(f"Configuration validation error: {e}")
+            raise ValidationError(f"Configuration validation error: {e}") from e # Re-raise with context
 
-    def _create_default_config(self) -> 'AbioConfig': # Usar string literal para forward reference si AbioConfig no está definido aún
-        """
-        Creates a default configuration object with pre-defined values.
-
-        Returns:
-            AbioConfig: A new AbioConfig object populated with default configuration values.
-        """
-        self.logger.debug("Creating default configuration.") # Debug level logging
-        # Implementation to create and return a default AbioConfig object
-        # Example (pseudocode - replace with actual default config creation):
-        # default_config = AbioConfig(
-        #     gemini_api_key = "YOUR_DEFAULT_API_KEY_HERE", # Consider using None or a placeholder and documenting that it needs to be set
-        #     log_level = "INFO",
-        #     ... other default settings ...
-        # )
-        # return default_config
-        pass # Placeholder for implementation
-        self.logger.info("Default configuration created.")
-        # return ... # Return the created default config object
+    def _create_default_config(self) -> AbioConfig:
+        self.logger.debug("Creando configuración por defecto.")
+        return AbioConfig(
+            agent={
+                "name": "Abio",
+                "version": "1.0.0",
+                "description": "Agente de IA para tareas conversacionales.",
+                "environment": "development"
+            },
+            chat={
+                "default_model": "models/gemini-1.5-flash",
+                "temperature": 0.7,
+                "top_p": 0.9
+            },
+            context={
+                "message_limit": 10,
+                "initial_prompts": [
+                    {"role": "system", "content": "Eres un agente útil."},
+                    {"role": "user", "content": "Hola, ¿quién eres?"}
+                ]
+            },
+            meta={
+                "created_by": "TuNombre",
+                "created_at": "2025-04-13",
+                "last_updated": "2025-04-13"
+            }
+        )

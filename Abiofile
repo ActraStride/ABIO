@@ -1,24 +1,23 @@
-# General configuration file for the AI agent - config.abio
+# Archivo de configuración general para el agente de IA - config.abio
 
 agent:
-  name: "<AGENT_NAME>"                          # (str) Name of the AI agent.
-  version: "<VERSION>"                          # (str) Version number of the agent (e.g., 1.0.0).
-  description: "<AGENT_DESCRIPTION>"            # (str) Brief description of the agent’s functionality.
-  environment: "<development|production|test>"  # (str) Environment type the agent is running in.
+  name: "ABIO"                                   # (str) Nombre del agente de IA.
+  version: "1.0.0"                               # (str) Versión del agente.
+  description: "ABIO es un asistente de IA para conversación general y apoyo inteligente en tareas."  # (str) Descripción breve de la funcionalidad del agente.
+  environment: "development"                     # (str) Entorno en el que se ejecuta el agente (development, production, test).
 
 chat:
-  message_limit: <CONTEXT_MESSAGE_LIMIT>        # (int) Maximum number of messages to retain in context window. e.g., 50
-  default_model: "<AI_MODEL_NAME>"              # (str) Name of the AI model used by default. e.g., gemini-1.5-flash
-  temperature: <FLOAT_VALUE_BETWEEN_0_AND_1>    # (float) Sampling temperature for randomness. Higher = more creative.
-  top_p: <FLOAT_VALUE_BETWEEN_0_AND_1>          # (float) Nucleus sampling parameter. Lower = more focused outputs.
+  default_model: "models/gemini-1.5-flash"       # (str) Modelo de IA predeterminado para las interacciones.
+  temperature: 0.7                               # (float) Controla la aleatoriedad de las respuestas. Valores bajos hacen que las respuestas sean más deterministas.
+  top_p: 0.9                                     # (float) Controla la diversidad del contenido generado. Valores bajos lo hacen más enfocado.
 
-  pretraining_prompts:
-    - role: "system"                            # (str) Role of the speaker. "system" is used to define initial behavior.
-      content: "<INITIAL_SYSTEM_MESSAGE>"       # (str) Message setting up system instructions or rules for the AI.
-    - role: "user"                              # (str) Role of the user, starting the first interaction.
-      content: "<INITIAL_USER_QUESTION>"        # (str) Initial prompt or question given by the user to guide the agent.
+context:
+  message_limit: 20                              # (int) Número máximo de mensajes que se mantienen en el contexto de la conversación.
+  context_messages:                               # (list) Lista de mensajes iniciales para establecer el contexto.
+    - role: "system"
+      content: "Eres ABIO, un asistente de IA útil y bien informado, listo para ayudar al usuario con cualquier tarea o pregunta."
 
 meta:
-  created_by: "<YOUR_NAME>"                     # (str) Author or creator of the configuration file.
-  created_at: "<CREATION_DATE>"                 # (str) Date when the configuration file was created. e.g., 2025-04-13
-  last_updated: "<LAST_UPDATE_DATE>"            # (str) Date of the last edit or modification to this file.
+  created_by: "Tu Nombre"                        # (str) Nombre de quien creó este archivo de configuración.
+  created_at: "2025-04-18"                       # (str) Fecha de creación del archivo.
+  last_updated: "2025-04-18"                     # (str) Fecha de la última modificación.

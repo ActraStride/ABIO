@@ -6,23 +6,26 @@ Manages the conversational context for the AI agent and delegates embedding-rela
 
 from typing import List, Optional
 from src.models.message import Message  # Import the Message model
+from src.models import ContextMessage
 
 class ContextManager:
     """
     Main class for managing the conversational context.
     """
-    def __init__(self, max_messages: Optional[int] = None, pretraining_prompt: Optional[List[Message]] = None):
+    def __init__(self, message_limit: Optional[int] = None, context_messages: Optional[List[ContextMessage]] = None):
         """
         Initializes the ContextManager.
 
         Args:
-            max_messages (Optional[int]): Maximum number of messages to retain in the context.
+            message_limit (Optional[int]): Maximum number of messages to retain in the context.
                                           If None, no limit is applied.
-            pretraining_prompt (Optional[List[Message]]): A list of pretraining messages to initialize the context.
+            context_messages (Optional[List[Message]]): A list of pretraining messages to initialize the context.
         """
-        self.messages: List[Message] = pretraining_prompt or []  # Initialize with pretraining messages
+        #FIXME - self.messages and self.context_messages types are not the same
+        self.messages: List[Message] = context_messages or []  # Initialize with pretraining messages
+        print(f"ContextManager {self.messages}.")
         self.embedding_context = None  # Embedding-related operations
-        self.max_messages = max_messages
+        self.message_limit = message_limit
 
     def add_message(self, message: Message):
         """
@@ -69,6 +72,6 @@ class ContextManager:
         """
         Trims the message history to the maximum allowed messages, if applicable.
         """
-        if self.max_messages is not None and len(self.messages) > self.max_messages:
-            excess = len(self.messages) - self.max_messages
+        if self.message_limit is not None and len(self.messages) > self.message_limit:
+            excess = len(self.messages) - self.message_limit
             self.messages = self.messages[excess:]

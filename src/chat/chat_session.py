@@ -32,7 +32,7 @@ class ChatSession:
     Manages a chat session, including message history and interactions with an AI model.
 
     """
-    def __init__(self, session_id: str, model_name: str, client: GeminiClient, max_messages: int = 50):
+    def __init__(self, session_id: str, model_name: str, client: GeminiClient, context_manager: ContextManager):
         """
         Initializes a new ChatSession.
 
@@ -47,7 +47,11 @@ class ChatSession:
         self.session_id = session_id  # Unique identifier for the session
         self.model_name = model_name  # Name of the AI model used
         self.client = client
-        self.context_manager = ContextManager(max_messages=max_messages)  # Initialize ContextManager
+        self.context_manager = context_manager # Initialize ContextManager
+        #TODO - initialize the model with the context manager context_messages
+    
+    def _initialize_context(self):
+        pass
 
     def add_message(self, role: str, content: str) -> None:
         """

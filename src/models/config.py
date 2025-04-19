@@ -5,7 +5,7 @@ Defines the configuration models for the Abio AI agent.
 
 This module provides Pydantic models to structure, validate, and manage
 configuration data loaded from an Abiofile (YAML or JSON). The configuration
-includes agent metadata, chat settings, and pretraining prompts.
+includes agent metadata, chat settings, context settings, and initial context messages.
 
 Example:
     >>> from src.models.config import AbioConfig
@@ -42,9 +42,11 @@ class AgentConfig(BaseModel):
         from_attributes = True
 
 
-class PretrainingPrompt(BaseModel):
+class ContextMessage(BaseModel):
     """
-    Defines a single pretraining prompt with an assigned role.
+    Defines a single initial context message with an assigned role.
+
+    These messages are used to set up the initial context of the conversation.
 
     Attributes:
         role (Literal): Role of the message sender (e.g., system, user).
@@ -59,20 +61,33 @@ class PretrainingPrompt(BaseModel):
 
 class ChatConfig(BaseModel):
     """
-    Configuration related to chat behavior and model parameters.
+    Configuration related to chat behavior and model parameters,
+    excluding context management.
 
     Attributes:
-        message_limit (int): Number of context messages.
         default_model (str): Name of the default model.
         temperature (float): Sampling temperature.
         top_p (float): Nucleus sampling value.
-        pretraining_prompts (List[PretrainingPrompt]): Initial prompts.
     """
-    message_limit: int = Field(..., ge=1)
     default_model: str
     temperature: float = Field(..., ge=0.0, le=1.0)
     top_p: float = Field(..., ge=0.0, le=1.0)
-    pretraining_prompts: List[PretrainingPrompt] = []
+
+    class Config:
+        from_attributes = True
+
+
+class ContextConfig(BaseModel):
+    """
+    Configuration for managing conversation context, including history size
+    and initial context messages.
+
+    Attributes:
+        message_limit (int): Maximum number of messages to retain in the context history.
+        context_messages (List[ContextMessage]): List of context messages to start the context.
+    """
+    message_limit: int = Field(..., ge=1)
+    context_messages: List[ContextMessage] = []
 
     class Config:
         from_attributes = True
@@ -101,11 +116,13 @@ class AbioConfig(BaseModel):
 
     Attributes:
         agent (AgentConfig): General info and runtime environment.
-        chat (ChatConfig): Chat parameters and prompts.
+        chat (ChatConfig): Chat parameters related to model behavior.
+        context (ContextConfig): Configuration for managing conversation context.
         meta (MetaConfig): Metadata about the config file.
     """
     agent: AgentConfig
     chat: ChatConfig
+    context: ContextConfig
     meta: MetaConfig
 
     class Config:
