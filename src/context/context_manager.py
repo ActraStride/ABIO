@@ -21,7 +21,6 @@ class ContextManager:
             context_messages (Optional[List[Message]]): A list of pretraining messages to initialize the context.
         """
         self.messages: List[Message] = context_messages or []  # Initialize with pretraining messages
-        print(f"ContextManager {self.messages}.")
         self.embedding_context = None  # Embedding-related operations
         self.message_limit = message_limit
 
