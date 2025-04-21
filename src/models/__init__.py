@@ -8,7 +8,7 @@ Example:
     >>> from src.models import AbioConfig, AgentConfig, PretrainingPrompt
 """
 
-from .config import AbioConfig, AgentConfig, ContextMessage, ContextConfig, ChatConfig, MetaConfig
+from .config import AbioConfig, AgentConfig, ContextConfig, ChatConfig, MetaConfig
 from .message import Message
 from .raw_response import RawResponse
 

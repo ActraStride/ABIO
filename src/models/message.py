@@ -30,14 +30,16 @@ from datetime import datetime
 class Message(BaseModel):
     """
     Represents a single message in a chat session.
-
+    
     Attributes:
         role (str): The role of the sender (e.g., "user", "assistant", "system").
         content (str): The text content of the message.
         timestamp (Optional[datetime]): The time when the message was created.
         tokens (Optional[int]): The number of tokens in the message content.
     """
-    role: str  # Role of the sender (e.g., "user", "assistant", "system")
+    # TODO - Enhance role management with an Enum for better validation
+    # REVIEW -  - Add role model to manage roles?
+    role: str  # Role of the sender (common values: "user", "assistant", "system")
     content: str  # The text content of the message
     timestamp: Optional[datetime] = None  # Timestamp of the message (optional)
     tokens: Optional[int] = None  # Number of tokens in the message content (optional)

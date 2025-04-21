@@ -126,7 +126,6 @@ class GeminiClient:
             self.logger.error("Error counting tokens: %s", e)
             raise RuntimeError("Failed to count tokens.") from e
 
-    #FIXME - must manage types for prompt 
     def generate_text(self, prompt: str, model_name: str = DEFAULT_MODEL_NAME) -> RawResponse:
         """
         Generates text based on the provided prompt using the specified model.

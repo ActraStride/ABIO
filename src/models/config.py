@@ -21,6 +21,7 @@ Dependencies:
 from pydantic import BaseModel, Field
 from typing import List, Literal, Optional
 from datetime import datetime
+from src.models.message import Message
 
 
 class AgentConfig(BaseModel):
@@ -37,23 +38,6 @@ class AgentConfig(BaseModel):
     version: str
     description: str
     environment: Literal["development", "production", "test"]
-
-    class Config:
-        from_attributes = True
-
-
-class ContextMessage(BaseModel):
-    """
-    Defines a single initial context message with an assigned role.
-
-    These messages are used to set up the initial context of the conversation.
-
-    Attributes:
-        role (Literal): Role of the message sender (e.g., system, user).
-        content (str): Message content.
-    """
-    role: Literal["system", "user"]
-    content: str
 
     class Config:
         from_attributes = True
@@ -87,7 +71,7 @@ class ContextConfig(BaseModel):
         context_messages (List[ContextMessage]): List of context messages to start the context.
     """
     message_limit: int = Field(..., ge=1)
-    context_messages: List[ContextMessage] = []
+    context_messages: List[Message] = []
 
     class Config:
         from_attributes = True

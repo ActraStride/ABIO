@@ -48,10 +48,29 @@ class ChatSession:
         self.model_name = model_name  # Name of the AI model used
         self.client = client
         self.context_manager = context_manager # Initialize ContextManager
-        #TODO - initialize the model with the context manager context_messages
+        self._initialize_context()
+
+
     
     def _initialize_context(self):
-        pass
+        """
+        Initializes the model context with the full message history.
+        Concatenates all messages' content and sends it to the model as a single string.
+        """
+        self.logger.info("Initializing context with existing message history.")
+
+        if not self.context_manager.messages:
+            self.logger.warning("No messages found in context manager during initialization.")
+            return
+
+        # Concatenate all message contents into a single string
+        full_context = "\n".join(
+            f"{msg.role}: {msg.content}" for msg in self.context_manager.messages
+        )
+
+        # Send the full context to the model
+        self.generate_response(full_context)
+
 
     def add_message(self, role: str, content: str) -> None:
         """
