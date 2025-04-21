@@ -7,6 +7,7 @@ This module provides a wrapper around the Gemini SDK, enabling:
 - Configuration of the Gemini API with an API key.
 - Retrieval of available models for content generation.
 - Text generation using a specified model.
+- Token counting for input and generated text.
 
 Example:
     >>> from src.clients.gemini_client import GeminiClient
@@ -14,12 +15,13 @@ Example:
     >>> models = client.list_models()
     >>> print(models)
     >>> response = client.generate_text(prompt="Hello, world!")
-    >>> print(response)
+    >>> print(response.generated_text)
 
 Dependencies:
     - google.generativeai
     - logging
     - IPython.display
+    - python-dotenv
 """
 
 import google.generativeai as genai
@@ -37,7 +39,11 @@ DEFAULT_MODEL_NAME = "gemini-1.5-flash"
 class GeminiClient:
     def __init__(self):
         """
-        Initializes the Gemini client.
+        Initializes the Gemini client by loading the API key from the environment
+        and configuring the Gemini SDK.
+
+        Raises:
+            ValueError: If the API key is not found in the environment variables.
         """
         self.logger = logging.getLogger(__name__)  # Create a logger for this class
         self.logger.info("Initializing GeminiClient.")
@@ -54,7 +60,7 @@ class GeminiClient:
         Configures the Gemini SDK with the API key.
 
         Raises:
-            RuntimeError: If the SDK configuration fails.
+            RuntimeError: If the SDK configuration fails due to an error.
         """
         try:
             genai.configure(api_key=self.api_key)
@@ -65,13 +71,13 @@ class GeminiClient:
 
     def list_models(self) -> List[str]:
         """
-        Lists the available models that support content generation.
-        
+        Retrieves a list of available models that support content generation.
+
         Returns:
-            List[str]: List of compatible model names.
+            List[str]: A list of model names that can generate content.
 
         Raises:
-            RuntimeError: If fetching models fails.
+            RuntimeError: If there is an error while fetching the models.
         """
         self.logger.info("Fetching list of available models.")
         try:
@@ -89,18 +95,19 @@ class GeminiClient:
     
     def count_tokens(self, text: str, model_name: str = DEFAULT_MODEL_NAME) -> int:
         """
-        Counts the number of tokens in the given text using the specified model.
+        Counts the number of tokens in the provided text using the specified model.
 
         Args:
-            text (str): The text to count tokens for.
-            model_name (str): Name of the model to use for token counting (default: DEFAULT_MODEL_NAME).
+            text (str): The input text for which tokens need to be counted.
+            model_name (str): The name of the model to use for token counting 
+                              (default: DEFAULT_MODEL_NAME).
 
         Returns:
-            int: The total number of tokens in the text.
+            int: The total number of tokens in the input text.
 
         Raises:
-            ValueError: If the text is empty or invalid.
-            RuntimeError: If token counting fails.
+            ValueError: If the input text is empty or invalid.
+            RuntimeError: If there is an error during token counting.
         """
         if not text.strip():
             raise ValueError("Text cannot be empty or whitespace.")
@@ -121,18 +128,20 @@ class GeminiClient:
 
     def generate_text(self, prompt: str, model_name: str = DEFAULT_MODEL_NAME) -> RawResponse:
         """
-        Generates text based on a prompt using the specified model and logs token counts.
-        
+        Generates text based on the provided prompt using the specified model.
+
         Args:
-            prompt (str): Input text for generation.
-            model_name (str): Name of the model to use (default: DEFAULT_MODEL_NAME).
-        
+            prompt (str): The input text to generate content from.
+            model_name (str): The name of the model to use for text generation 
+                              (default: DEFAULT_MODEL_NAME).
+
         Returns:
-            Dict[str, Any]: A dictionary containing the generated text, token counts, and metadata.
+            RawResponse: An object containing the generated text, token counts, 
+                         model name, and additional metadata.
 
         Raises:
             ValueError: If the prompt is empty or invalid.
-            RuntimeError: If text generation fails.
+            RuntimeError: If text generation fails due to an SDK or unexpected error.
         """
         if not prompt.strip():
             raise ValueError("Prompt cannot be empty or whitespace.")
@@ -177,11 +186,11 @@ class GeminiClient:
 
     def is_model_supported(self, model_name: str) -> bool:
         """
-        Checks if a model is supported for content generation.
-        
+        Checks if the specified model is supported for content generation.
+
         Args:
-            model_name (str): Name of the model to check.
-        
+            model_name (str): The name of the model to check.
+
         Returns:
             bool: True if the model is supported, False otherwise.
         """
@@ -193,7 +202,10 @@ class GeminiClient:
 
     def close(self) -> None:
         """
-        Placeholder for SDK cleanup if applicable.
+        Performs cleanup for the Gemini SDK, if applicable.
+
+        This method is a placeholder for any SDK-specific cleanup logic that 
+        might be required in the future.
         """
         try:
             self.logger.info("Performing cleanup for Gemini SDK.")

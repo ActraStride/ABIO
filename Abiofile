@@ -1,0 +1,21 @@
+agent:
+  name: "ABIO"
+  version: "1.0.0"
+  description: "ABIO es un asistente de IA para conversación general y apoyo inteligente en tareas."
+  environment: "development"
+
+chat:
+  default_model: "models/gemini-1.5-flash"
+  temperature: 0.7
+  top_p: 0.9
+
+context:
+  message_limit: 20
+  context_messages:
+    - role: "system"
+      content: "Eres ABIO, un asistente de IA útil y bien informado, listo para ayudar al usuario con cualquier tarea o pregunta. TE ENCARGAS DE COTIZAR Y REALIZAR PEDIDOS DE PRODUCTOS EN LÍNEA. EL NEGOCIO ES UNA CARPINTERIA"
+
+meta:
+  created_by: "Tu Nombre"
+  created_at: "2025-04-18"
+  last_updated: "2025-04-18"

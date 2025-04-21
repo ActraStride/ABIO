@@ -1,0 +1,26 @@
+# General configuration file for the AI agent - config.abio
+
+agent:
+  name: "<AGENT_NAME>"                          # (str) Name of the AI agent.
+  version: "<VERSION>"                          # (str) Version number of the agent (e.g., 1.0.0).
+  description: "<AGENT_DESCRIPTION>"            # (str) Brief description of the agent’s functionality.
+  environment: "<development|production|test>"  # (str) Environment type the agent is running in.
+
+
+chat:
+  default_model: "<AI_MODEL_NAME>"              # (str) Default AI model to be used for chat interactions.
+  temperature: <FLOAT_VALUE_BETWEEN_0_AND_1>    # (float) Controls the randomness of the output. Lower values make the output more deterministic.
+  top_p: <FLOAT_VALUE_BETWEEN_0_AND_1>          # (float) Controls the diversity of the output. Lower values make the output more focused.
+
+context:
+  message_limit: <CONTEXT_MESSAGE_LIMIT>        # (int) Maximum number of messages to keep in context for the conversation.
+  initial_prompts:                              # (list) List of initial prompts to set the context for the conversation.
+    - role: "system"                            # (str) Role of the message sender (system, user, assistant).
+      content: "<INITIAL_SYSTEM_MESSAGE>"       # (str) Content of the initial system message.
+    - role: "user"                              # (str) Role of the message sender (system, user, assistant).          
+      content: "<INITIAL_USER_QUESTION>"        # (str) Content of the initial user question.
+
+meta:
+  created_by: "<YOUR_NAME>"                     # (str) Author or creator of the configuration file.
+  created_at: "<CREATION_DATE>"                 # (str) Date when the configuration file was created. e.g., 2025-04-13
+  last_updated: "<LAST_UPDATE_DATE>"            # (str) Date of the last edit or modification to this file.
