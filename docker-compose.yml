@@ -7,4 +7,5 @@ services:
       dockerfile: Dockerfile
     volumes:
       - .:/app
-    command: ["python", "-m", "unittest", "discover", "-s", "tests"]
+    stdin_open: true  # Permite entrada estándar (necesario para terminal interactiva)
+    tty: true          # Asigna una terminal pseudo-TTY

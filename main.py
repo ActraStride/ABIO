@@ -24,7 +24,7 @@ def main():
 
     try:
         # Mostrar cabecera visual
-        console.print(Panel.fit("[bold cyan]🤖 Bienvenido al sistema de chat Gemini[/bold cyan]\nEscribe 'salir' para terminar la sesión.", title="Gemini CLI", subtitle="Actra Dev"))
+        console.print(Panel.fit("[bold cyan]🤖 Bienvenido al sistema de chat Actra[/bold cyan]\nEscribe 'salir' para terminar la sesión.", title="Actra CLI", subtitle="Actra Dev"))
 
         # Cargar configuración del agente
         config_manager = ConfigManager(config_path="Abiofile")  

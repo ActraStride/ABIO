@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.13-slim
 
 WORKDIR /app
 
@@ -9,5 +9,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia el resto del proyecto al contenedor
 COPY . .
 
-# Comando por defecto para ejecutar los tests
-CMD ["python", "-m", "unittest", "discover", "-s", "tests"]
+# Comando por defecto: abre una terminal interactiva
+CMD ["sh"]
