@@ -3,6 +3,7 @@ from src.utils.setup_logging import setup_logging
 from src.chat.chat_session import ChatSession
 from src.config.agent_config import ConfigManager
 from src.context import ContextManager
+from src.embeddings import EmbeddingsGenerator
 from pathlib import Path
 import logging
 
@@ -43,7 +44,8 @@ def main():
             session_id=session_id,
             model_name=config.chat.default_model,
             client=client,
-            context_manager=context_manager
+            context_manager=context_manager,
+            embeddings_generator=EmbeddingsGenerator()  
         )
 
         logger.info(f"✅ Sesión de chat iniciada con ID: {session_id}")

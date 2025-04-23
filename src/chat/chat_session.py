@@ -25,6 +25,7 @@ from typing import List
 from src.models import Message  # Import Message from the models module
 from src.clients.gemini_client import GeminiClient
 from src.context.context_manager import ContextManager  # Import ContextManager
+from src.embeddings import EmbeddingsGenerator  # Import EmbeddingsGenerator
 import logging
 
 class ChatSession:
@@ -32,7 +33,14 @@ class ChatSession:
     Manages a chat session, including message history and interactions with an AI model.
 
     """
-    def __init__(self, session_id: str, model_name: str, client: GeminiClient, context_manager: ContextManager):
+    def __init__(
+        self,
+        session_id: str,
+        model_name: str,
+        client: GeminiClient,
+        context_manager: ContextManager,
+        embeddings_generator: EmbeddingsGenerator = None 
+    ):
         """
         Initializes a new ChatSession.
 
@@ -40,7 +48,8 @@ class ChatSession:
             session_id (str): A unique identifier for the session.
             model_name (str): The name of the AI model to use.
             client (GeminiClient): The client used to interact with the AI model.
-            max_messages (int): Maximum number of messages to retain in the context.
+            context_manager (ContextManager): Manages the context and message history.
+            embeddings_generator (EmbeddingsGenerator, optional): For generating embeddings.
         """
         self.logger = logging.getLogger(__name__)  # Create a logger for this class
         self.logger.info("Initializing ChatSession with session_id: %s and model_name: %s", session_id, model_name)
@@ -48,6 +57,7 @@ class ChatSession:
         self.model_name = model_name  # Name of the AI model used
         self.client = client
         self.context_manager = context_manager # Initialize ContextManager
+        self.embeddings_generator = embeddings_generator  # Guarda el generador de embeddings
         self._initialize_context()
 
 
@@ -56,6 +66,7 @@ class ChatSession:
         """
         Initializes the model context with the full message history.
         Concatenates all messages' content and sends it to the model as a single string.
+        Also generates embeddings for the context messages if an embeddings generator is available.
         """
         self.logger.info("Initializing context with existing message history.")
 
@@ -67,6 +78,13 @@ class ChatSession:
         full_context = "\n".join(
             f"{msg.role}: {msg.content}" for msg in self.context_manager.messages
         )
+
+        # Si hay un embeddings_generator, genera embeddings para los mensajes del contexto
+        if self.embeddings_generator:
+            texts = [msg.content for msg in self.context_manager.messages]
+            embeddings = self.embeddings_generator.generate(texts)
+            self.logger.info(f"Embeddings generated for context messages: {embeddings}")
+            print(f"Embeddings generated for context messages: {embeddings}")
 
         # Send the full context to the model
         self.generate_response(full_context)
