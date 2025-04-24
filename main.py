@@ -3,6 +3,7 @@ from src.utils.setup_logging import setup_logging
 from src.chat.chat_session import ChatSession
 from src.config.agent_config import ConfigManager
 from src.context import ContextManager
+from src.embeddings import EmbeddingsGenerator
 from pathlib import Path
 import logging
 
@@ -24,7 +25,7 @@ def main():
 
     try:
         # Mostrar cabecera visual
-        console.print(Panel.fit("[bold cyan]🤖 Bienvenido al sistema de chat Gemini[/bold cyan]\nEscribe 'salir' para terminar la sesión.", title="Gemini CLI", subtitle="Actra Dev"))
+        console.print(Panel.fit("[bold cyan]🤖 Bienvenido al sistema de chat Actra[/bold cyan]\nEscribe 'salir' para terminar la sesión.", title="Actra CLI", subtitle="Actra Dev"))
 
         # Cargar configuración del agente
         config_manager = ConfigManager(config_path="Abiofile")  
@@ -39,10 +40,11 @@ def main():
         # Crear una nueva sesión de chat
         session_id = "12345"
         context_manager = ContextManager(config.context.message_limit, config.context.context_messages)
-        chat_session = ChatSession(
+        chat_session: ChatSession = ChatSession(
             session_id=session_id,
             client=client,
-            context_manager=context_manager
+            context_manager=context_manager,
+            embeddings_generator=EmbeddingsGenerator()  
         )
 
         logger.info(f"✅ Sesión de chat iniciada con ID: {session_id}")

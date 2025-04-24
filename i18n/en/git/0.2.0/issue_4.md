@@ -1,4 +1,4 @@
-# JOURNAL.md
+# issue_4.md
 
 ## Add Configuration Management for Chat Agent Settings [#4]
 

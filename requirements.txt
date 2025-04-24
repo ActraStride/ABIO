@@ -2,3 +2,6 @@ google-generativeai
 anthropic
 python-dotenv
 ipython
+sentence-transformers
+colorama
+rich

@@ -25,26 +25,36 @@ from typing import List
 from src.models import Message  # Import Message from the models module
 from src.clients.gemini_client import GeminiClient
 from src.context.context_manager import ContextManager  # Import ContextManager
+from src.embeddings import EmbeddingsGenerator
 import logging
 
 class ChatSession:
     """
     Manages a chat session, including message history and interactions with an AI model.
-
     """
-    def __init__(self, session_id: str, client: GeminiClient, context_manager: ContextManager):
+
+    def __init__(
+        self, 
+        session_id: str, 
+        client: GeminiClient, 
+        context_manager: ContextManager,
+        embeddings_generator: EmbeddingsGenerator = None
+    ):
         """
         Initializes a new ChatSession.
 
         Args:
             session_id (str): A unique identifier for the session.
             client (GeminiClient): The client used to interact with the AI model.
+            context_manager (ContextManager): Manages the context and message history.
+            embeddings_generator (EmbeddingsGenerator, optional): For embedding operations.
         """
         self.logger = logging.getLogger(__name__)  # Create a logger for this class
         self.logger.info("Initializing ChatSession with session_id: %s", session_id)
         self.session_id = session_id  # Unique identifier for the session
         self.client = client
         self.context_manager = context_manager # Initialize ContextManager
+        self.embeddings_generator = embeddings_generator
         self._initialize_context()
 
 

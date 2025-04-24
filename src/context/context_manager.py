@@ -4,6 +4,7 @@ Module: context_manager
 Manages the conversational context for the AI agent and delegates embedding-related tasks.
 """
 
+import numpy as np
 from typing import List, Optional
 from src.models.message import Message  # Import the Message model
 
@@ -11,7 +12,11 @@ class ContextManager:
     """
     Main class for managing the conversational context.
     """
-    def __init__(self, message_limit: Optional[int] = None, context_messages: Optional[List[Message]] = None):
+    def __init__(
+            self, 
+            message_limit: Optional[int] = None, 
+            context_messages: Optional[List[Message]] = None, 
+        ) -> None:
         """
         Initializes the ContextManager.
 
@@ -21,8 +26,8 @@ class ContextManager:
             context_messages (Optional[List[Message]]): A list of pretraining messages to initialize the context.
         """
         self.messages: List[Message] = context_messages or []  # Initialize with pretraining messages
-        self.embedding_context = None  # Embedding-related operations
         self.message_limit = message_limit
+        self.memory_embeddings = []  # Placeholder for memory embeddings
 
     def add_message(self, message: Message):
         """
@@ -72,3 +77,5 @@ class ContextManager:
         if self.message_limit is not None and len(self.messages) > self.message_limit:
             excess = len(self.messages) - self.message_limit
             self.messages = self.messages[excess:]
+
+    
