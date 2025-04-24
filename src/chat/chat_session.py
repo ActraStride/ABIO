@@ -10,7 +10,7 @@ of message history, context management, and interaction with AI models.
 Example:
     >>> from src.chat.chat_session import ChatSession
     >>> from src.models.message import Message
-    >>> session = ChatSession(session_id="12345", model_name="gemini-1.5-flash")
+    >>> session = ChatSession(session_id="12345", client=gemini_client_instance)
     >>> session.add_message(role="user", content="Hello!")
     >>> response = session.generate_response()
     >>> print(response.content)
@@ -25,7 +25,7 @@ from typing import List
 from src.models import Message  # Import Message from the models module
 from src.clients.gemini_client import GeminiClient
 from src.context.context_manager import ContextManager  # Import ContextManager
-from src.embeddings import EmbeddingsGenerator  # Import EmbeddingsGenerator
+from src.embeddings import EmbeddingsGenerator
 import logging
 
 class ChatSession:
@@ -34,30 +34,25 @@ class ChatSession:
 
     """
     def __init__(
-        self,
-        session_id: str,
-        model_name: str,
-        client: GeminiClient,
-        context_manager: ContextManager,
-        embeddings_generator: EmbeddingsGenerator = None 
-    ):
+            self, 
+            session_id: str, 
+            client: GeminiClient, 
+            context_manager: ContextManager,
+            embeddings_generator: EmbeddingsGenerator = None    
+        ):
         """
         Initializes a new ChatSession.
 
         Args:
             session_id (str): A unique identifier for the session.
-            model_name (str): The name of the AI model to use.
             client (GeminiClient): The client used to interact with the AI model.
-            context_manager (ContextManager): Manages the context and message history.
-            embeddings_generator (EmbeddingsGenerator, optional): For generating embeddings.
         """
         self.logger = logging.getLogger(__name__)  # Create a logger for this class
-        self.logger.info("Initializing ChatSession with session_id: %s and model_name: %s", session_id, model_name)
+        self.logger.info("Initializing ChatSession with session_id: %s", session_id)
         self.session_id = session_id  # Unique identifier for the session
-        self.model_name = model_name  # Name of the AI model used
         self.client = client
         self.context_manager = context_manager # Initialize ContextManager
-        self.embeddings_generator = embeddings_generator  # Guarda el generador de embeddings
+        self.embeddings_generator = embeddings_generator
         self._initialize_context()
 
 
@@ -66,7 +61,6 @@ class ChatSession:
         """
         Initializes the model context with the full message history.
         Concatenates all messages' content and sends it to the model as a single string.
-        Also generates embeddings for the context messages if an embeddings generator is available.
         """
         self.logger.info("Initializing context with existing message history.")
 
@@ -78,13 +72,6 @@ class ChatSession:
         full_context = "\n".join(
             f"{msg.role}: {msg.content}" for msg in self.context_manager.messages
         )
-
-        # Si hay un embeddings_generator, genera embeddings para los mensajes del contexto
-        if self.embeddings_generator:
-            texts = [msg.content for msg in self.context_manager.messages]
-            embeddings = self.embeddings_generator.generate(texts)
-            self.logger.info(f"Embeddings generated for context messages: {embeddings}")
-            print(f"Embeddings generated for context messages: {embeddings}")
 
         # Send the full context to the model
         self.generate_response(full_context)
@@ -134,7 +121,7 @@ class ChatSession:
         full_prompt = f"{history_text}\nUser: {prompt}"
 
         # Generate response using the AI model
-        response = self.client.generate_text(prompt=full_prompt, model_name=self.model_name)
+        response = self.client.generate_text(prompt=full_prompt)
         generated_text = response.generated_text if hasattr(response, "generated_text") else "Error: No se pudo generar una respuesta."
         self.logger.info("Generated response: %s", generated_text)
 
