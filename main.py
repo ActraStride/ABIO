@@ -35,14 +35,13 @@ def main():
 
         # Inicializar el cliente de Gemini
         logger.info("Inicializando cliente de Gemini...")
-        client = GeminiClient()
+        client = GeminiClient(model_name=config.chat.default_model)
 
         # Crear una nueva sesión de chat
         session_id = "12345"
         context_manager = ContextManager(config.context.message_limit, config.context.context_messages)
         chat_session: ChatSession = ChatSession(
             session_id=session_id,
-            model_name=config.chat.default_model,
             client=client,
             context_manager=context_manager,
             embeddings_generator=EmbeddingsGenerator()  

@@ -31,21 +31,23 @@ import logging
 class ChatSession:
     """
     Manages a chat session, including message history and interactions with an AI model.
-
     """
+
     def __init__(
-            self, 
-            session_id: str, 
-            client: GeminiClient, 
-            context_manager: ContextManager,
-            embeddings_generator: EmbeddingsGenerator = None    
-        ):
+        self, 
+        session_id: str, 
+        client: GeminiClient, 
+        context_manager: ContextManager,
+        embeddings_generator: EmbeddingsGenerator = None
+    ):
         """
         Initializes a new ChatSession.
 
         Args:
             session_id (str): A unique identifier for the session.
             client (GeminiClient): The client used to interact with the AI model.
+            context_manager (ContextManager): Manages the context and message history.
+            embeddings_generator (EmbeddingsGenerator, optional): For embedding operations.
         """
         self.logger = logging.getLogger(__name__)  # Create a logger for this class
         self.logger.info("Initializing ChatSession with session_id: %s", session_id)

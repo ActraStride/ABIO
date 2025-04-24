@@ -37,7 +37,7 @@ from src.models.raw_response import RawResponse
 DEFAULT_MODEL_NAME = "gemini-1.5-flash"
 
 class GeminiClient:
-    def __init__(self):
+    def __init__(self, model_name: str = DEFAULT_MODEL_NAME) -> None:
         """
         Initializes the Gemini client by loading the API key from the environment
         and configuring the Gemini SDK.
@@ -45,6 +45,7 @@ class GeminiClient:
         Raises:
             ValueError: If the API key is not found in the environment variables.
         """
+        self.model_name: str = model_name
         self.logger = logging.getLogger(__name__)  # Create a logger for this class
         self.logger.info("Initializing GeminiClient.")
         load_dotenv()  # Load environment variables from .env file
@@ -93,14 +94,12 @@ class GeminiClient:
             raise RuntimeError("Failed to fetch models.") from e
 
     
-    def count_tokens(self, text: str, model_name: str = DEFAULT_MODEL_NAME) -> int:
+    def count_tokens(self, text: str) -> int:
         """
         Counts the number of tokens in the provided text using the specified model.
 
         Args:
             text (str): The input text for which tokens need to be counted.
-            model_name (str): The name of the model to use for token counting 
-                              (default: DEFAULT_MODEL_NAME).
 
         Returns:
             int: The total number of tokens in the input text.
@@ -112,9 +111,9 @@ class GeminiClient:
         if not text.strip():
             raise ValueError("Text cannot be empty or whitespace.")
         
-        self.logger.info("Counting tokens for text using model '%s'.", model_name)
+        self.logger.info("Counting tokens for text using model '%s'.", self.model_name)
         try:
-            model = genai.GenerativeModel(model_name)
+            model = genai.GenerativeModel(self.model_name)
             response = model.count_tokens(text)  # Assuming this returns an object
             total_tokens = response.total_tokens  # Extract the integer value
             self.logger.info("Token count successful. Total tokens: %d", total_tokens)
@@ -126,14 +125,12 @@ class GeminiClient:
             self.logger.error("Error counting tokens: %s", e)
             raise RuntimeError("Failed to count tokens.") from e
 
-    def generate_text(self, prompt: str, model_name: str = DEFAULT_MODEL_NAME) -> RawResponse:
+    def generate_text(self, prompt: str) -> RawResponse:
         """
         Generates text based on the provided prompt using the specified model.
 
         Args:
             prompt (str): The input text to generate content from.
-            model_name (str): The name of the model to use for text generation 
-                              (default: DEFAULT_MODEL_NAME).
 
         Returns:
             RawResponse: An object containing the generated text, token counts, 
@@ -146,21 +143,21 @@ class GeminiClient:
         if not prompt.strip():
             raise ValueError("Prompt cannot be empty or whitespace.")
         
-        self.logger.info("Generating text using model '%s'.", model_name)
+        self.logger.info("Generating text using model '%s'.", self.model_name)
         try:
             # Count tokens in the prompt
-            prompt_tokens = self.count_tokens(prompt, model_name)
+            prompt_tokens = self.count_tokens(prompt)
             self.logger.info("Prompt token count: %d", prompt_tokens)
 
             # Generate text
-            model = genai.GenerativeModel(model_name)
+            model = genai.GenerativeModel(self.model_name)
             response = model.generate_content(prompt)
             self.logger.info("Text generation response: %s", response)
             if not response or not response.text:
                 raise RuntimeError("Received empty response from the model.")
             
             # Count tokens in the response
-            response_tokens = self.count_tokens(response.text, model_name)
+            response_tokens = self.count_tokens(response.text)
             self.logger.info("Response token count: %d", response_tokens)
 
             self.logger.info("Text generation successful.")
@@ -170,13 +167,13 @@ class GeminiClient:
                 generated_text=response.text,
                 prompt_tokens=prompt_tokens,
                 response_tokens=response_tokens,
-                model_name=model_name,
+                model_name=self.model_name,
                 metadata=response.metadata if hasattr(response, "metadata") else None
             )
         
         except genai.exceptions.ModelNotFoundError as e:
-            self.logger.error("Model '%s' not found: %s", model_name, e)
-            raise RuntimeError(f"Model '{model_name}' not found.") from e
+            self.logger.error("Model '%s' not found: %s", self.model_name, e)
+            raise RuntimeError(f"Model '{self.model_name}' not found.") from e
         except genai.exceptions.GenerationError as e:
             self.logger.error("Error during text generation: %s", e)
             raise RuntimeError("Text generation failed due to an SDK error.") from e
@@ -184,7 +181,7 @@ class GeminiClient:
             self.logger.error("Unexpected error during text generation: %s", e)
             raise RuntimeError("An unexpected error occurred during text generation.") from e
 
-    def is_model_supported(self, model_name: str) -> bool:
+    def is_model_supported(self) -> bool:
         """
         Checks if the specified model is supported for content generation.
 
@@ -195,9 +192,9 @@ class GeminiClient:
             bool: True if the model is supported, False otherwise.
         """
         try:
-            return model_name in self.list_models()
+            return self.model_name in self.list_models()
         except RuntimeError:
-            self.logger.warning("Could not validate model '%s'.", model_name)
+            self.logger.warning("Could not validate model '%s'.", self.model_name)
             return False
 
     def close(self) -> None:
