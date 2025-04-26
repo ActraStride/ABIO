@@ -22,6 +22,8 @@ Dependencies:
 
 import faiss
 import numpy as np
+import pickle
+import os
 from typing import List, Tuple
 
 
@@ -95,3 +97,27 @@ class FAISSManager:
         """
         self.index.reset()
         self.texts.clear()
+
+    def save(self, path: str) -> None:
+        """
+        Saves the FAISS index and associated texts to disk for persistence.
+
+        Args:
+            path (str): The base path (without extension) to save the index and texts.
+        """
+        faiss.write_index(self.index, path + ".index")
+        with open(path + ".texts.pkl", "wb") as f:
+            pickle.dump(self.texts, f)
+
+    def load(self, path: str) -> None:
+        """
+        Loads the FAISS index and associated texts from disk.
+
+        Args:
+            path (str): The base path (without extension) to load the index and texts from.
+        """
+        if not os.path.exists(path + ".index") or not os.path.exists(path + ".texts.pkl"):
+            raise FileNotFoundError("Index or texts file not found at the specified path.")
+        self.index = faiss.read_index(path + ".index")
+        with open(path + ".texts.pkl", "rb") as f:
+            self.texts = pickle.load(f)
