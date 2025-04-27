@@ -1,5 +1,5 @@
 """
-Module Name: config_manager
+Module Name: agent_config
 
 Manages the application configuration for the Abio agent.
 
@@ -9,17 +9,23 @@ This module provides the ConfigManager class, responsible for:
 - Updating and saving configuration changes.
 
 Example:
-    >>> from src.config_manager import ConfigManager
+    >>> from src.config.agent_config import ConfigManager
     >>> config_manager = ConfigManager(config_path="abio.yaml")
     >>> config = config_manager.get_config()
-    >>> print(config.gemini_api_key)
+    >>> print(config.agent.name)
+
+Dependencies:
+    - logging
+    - yaml
+    - pydantic
+    - src.models.config (AbioConfig)
 """
 
 import logging
 import yaml
 from typing import Optional
 from pydantic import ValidationError
-from src.models import AbioConfig
+from src.models.config import AbioConfig
 
 class ConfigManager:
     def __init__(self, config_path: Optional[str] = None, config: Optional[AbioConfig] = None): 
@@ -40,6 +46,8 @@ class ConfigManager:
         Raises:
             FileNotFoundError: If `config_path` is provided but the file does not exist.
             ValueError: If there are issues loading or parsing the configuration file.
+            yaml.YAMLError: If the YAML file is not properly formatted.
+            ValidationError: If the loaded data does not match the AbioConfig schema.
         """
         self.logger = logging.getLogger(__name__) # Initialize logger for this class
         self.logger.info("Initializing ConfigManager.")
@@ -66,7 +74,6 @@ class ConfigManager:
 
         self.logger.info("ConfigManager initialized successfully.")
 
-
     def get_config(self) -> AbioConfig: 
         """
         Returns the current configuration object.
@@ -74,6 +81,7 @@ class ConfigManager:
         Returns:
             AbioConfig: The current configuration object.
         """
+        self.logger.debug("Retrieving configuration.")
         return self._config
 
     def update_config(self, new_config: AbioConfig) -> None: 
@@ -86,7 +94,6 @@ class ConfigManager:
         self.logger.info("Updating configuration.")
         self._config = new_config
         self.logger.info("Configuration updated successfully.")
-
 
     def save_config(self, path: Optional[str] = None) -> None:
         """
@@ -103,7 +110,7 @@ class ConfigManager:
         Raises:
             ValueError: If no path is specified for saving and no original `config_path` was provided during initialization.
             IOError: If there is an error writing to the file.
-            # Potentially other exceptions depending on serialization implementation (e.g., YAML library errors)
+            yaml.YAMLError: If there is an error serializing the config to YAML.
         """
         save_path = path or self._config_path
         if not save_path:
@@ -112,11 +119,9 @@ class ConfigManager:
 
         self.logger.info("Saving configuration to: %s", save_path)
         try:
-            # Implementation for serializing and saving config to YAML file (e.g., using yaml library)
-            # Example (pseudocode - replace with actual YAML serialization):
-            # with open(save_path, 'w') as f:
-            #     yaml.dump(self._config.to_dict(), f) # Assuming AbioConfig can be converted to a dict
-            pass # Placeholder for implementation
+            config_dict = self._config.model_dump()
+            with open(save_path, 'w') as f:
+                yaml.safe_dump(config_dict, f)
             self.logger.info("Configuration saved successfully to: %s", save_path)
 
         except IOError as e:
@@ -126,8 +131,6 @@ class ConfigManager:
             self.logger.error("Unexpected error while saving configuration to %s: %s", save_path, e)
             raise RuntimeError(f"Unexpected error saving configuration to {save_path}: {e}") from e
 
-
-    # Private methods - starting with single underscore '_' is more common in Python for internal methods
     def _load_from_file(self, path: str) -> AbioConfig:
         """
         Loads and validates configuration from a YAML file using model_validate.
@@ -140,36 +143,42 @@ class ConfigManager:
 
         Raises:
             FileNotFoundError: If the configuration file does not exist.
-            YAMLError: If the YAML file is not properly formatted.
+            yaml.YAMLError: If the YAML file is not properly formatted.
             ValidationError: If the loaded data does not match the AbioConfig schema.
         """
         try:
-            self.logger.debug(f"Loading configuration from file: {path}")
+            self.logger.debug("Loading configuration from file: %s", path)
             with open(path, 'r') as f:
                 config_dict = yaml.safe_load(f) # Use safe_load to prevent arbitrary code execution
         except FileNotFoundError:
-            self.logger.error(f"Configuration file not found at: {path}")
-            raise FileNotFoundError(f"Configuration file not found at: {path}")
+            self.logger.error("Configuration file not found at: %s", path)
+            raise 
         except yaml.YAMLError as e:
-            self.logger.error(f"Error parsing YAML file at {path}: {e}")
-            raise yaml.YAMLError(f"Error parsing YAML file at {path}: {e}")
+            self.logger.error("Error parsing YAML file at %s: %s", path, e)
+            raise 
 
         try:
             config = AbioConfig.model_validate(config_dict) # Use model_validate instead of parse_obj
             self.logger.info("Configuration loaded and validated successfully.")
-            self.logger.debug(f"Loaded configuration: {config}") # Log the loaded config in debug mode
+            self.logger.debug("Loaded configuration: %s", config) # Log the loaded config in debug mode
             return config
         except ValidationError as e:
-            self.logger.error(f"Configuration validation error: {e}")
-            raise ValidationError(f"Configuration validation error: {e}") from e # Re-raise with context
+            self.logger.error("Configuration validation error: %s", e)
+            raise 
 
     def _create_default_config(self) -> AbioConfig:
-        self.logger.debug("Creando configuración por defecto.")
+        """
+        Creates a default configuration when no config file or object is provided.
+        
+        Returns:
+            AbioConfig: A default configuration object.
+        """
+        self.logger.debug("Creating default configuration.")
         return AbioConfig(
             agent={
                 "name": "Abio",
                 "version": "1.0.0",
-                "description": "Agente de IA para tareas conversacionales.",
+                "description": "AI agent for conversational tasks.",
                 "environment": "development"
             },
             chat={
@@ -180,13 +189,26 @@ class ConfigManager:
             context={
                 "message_limit": 10,
                 "initial_prompts": [
-                    {"role": "system", "content": "Eres un agente útil."},
-                    {"role": "user", "content": "Hola, ¿quién eres?"}
+                    {"role": "system", "content": "You are a helpful agent."},
+                    {"role": "user", "content": "Hello, who are you?"}
                 ]
             },
             meta={
-                "created_by": "TuNombre",
+                "created_by": "YourName",
                 "created_at": "2025-04-13",
                 "last_updated": "2025-04-13"
             }
         )
+        
+    def close(self) -> None:
+        """
+        Performs cleanup for the ConfigManager.
+        
+        This method is a placeholder for any cleanup logic that might be needed
+        in the future for consistency with other components.
+        """
+        try:
+            self.logger.info("Closing ConfigManager.")
+            # Add any cleanup logic here if needed in the future
+        except Exception as e:
+            self.logger.error("Error during ConfigManager cleanup: %s", e)

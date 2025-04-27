@@ -9,18 +9,21 @@ includes agent metadata, chat settings, context settings, and initial context me
 
 Example:
     >>> from src.models.config import AbioConfig
-    >>> config = AbioConfig.parse_file("abiofile.yaml")
+    >>> config = AbioConfig.model_validate_json(open("abiofile.json").read())
     >>> print(config.agent.name)
 
 Dependencies:
     - pydantic
     - typing
     - datetime
+    - src.models.message
 """
 
-from pydantic import BaseModel, Field
-from typing import List, Literal, Optional
 from datetime import datetime
+from typing import List, Literal, Optional
+
+from pydantic import BaseModel, Field, validator
+
 from src.models.message import Message
 
 
@@ -39,8 +42,51 @@ class AgentConfig(BaseModel):
     description: str
     environment: Literal["development", "production", "test"]
 
+    @validator('name', 'description')
+    def validate_non_empty_string(cls, v):
+        """
+        Validates that string fields are not empty or whitespace.
+        
+        Args:
+            v (str): The string value to validate
+            
+        Returns:
+            str: The validated string
+            
+        Raises:
+            ValueError: If the string is empty or only whitespace
+        """
+        if not v or not v.strip():
+            raise ValueError("String fields cannot be empty or whitespace")
+        return v
+        
+    @validator('version')
+    def validate_version_format(cls, v):
+        """
+        Validates that version follows semantic versioning format.
+        
+        Args:
+            v (str): The version string to validate
+            
+        Returns:
+            str: The validated version string
+            
+        Raises:
+            ValueError: If the version string is improperly formatted
+        """
+        if not v or not v.strip():
+            raise ValueError("Version cannot be empty or whitespace")
+        
+        # Simple validation for version format (can be extended)
+        parts = v.split('.')
+        if len(parts) < 2:
+            raise ValueError("Version should follow semantic versioning (e.g., 1.0.0)")
+        return v
+
     class Config:
+        """Pydantic configuration for AgentConfig"""
         from_attributes = True
+        validate_assignment = True
 
 
 class ChatConfig(BaseModel):
@@ -57,8 +103,28 @@ class ChatConfig(BaseModel):
     temperature: float = Field(..., ge=0.0, le=1.0)
     top_p: float = Field(..., ge=0.0, le=1.0)
 
+    @validator('default_model')
+    def validate_non_empty_string(cls, v):
+        """
+        Validates that string fields are not empty or whitespace.
+        
+        Args:
+            v (str): The string value to validate
+            
+        Returns:
+            str: The validated string
+            
+        Raises:
+            ValueError: If the string is empty or only whitespace
+        """
+        if not v or not v.strip():
+            raise ValueError("Model name cannot be empty or whitespace")
+        return v
+
     class Config:
+        """Pydantic configuration for ChatConfig"""
         from_attributes = True
+        validate_assignment = True
 
 
 class ContextConfig(BaseModel):
@@ -68,13 +134,15 @@ class ContextConfig(BaseModel):
 
     Attributes:
         message_limit (int): Maximum number of messages to retain in the context history.
-        context_messages (List[ContextMessage]): List of context messages to start the context.
+        context_messages (List[Message]): List of messages to initialize the context.
     """
     message_limit: int = Field(..., ge=1)
     context_messages: List[Message] = []
 
     class Config:
+        """Pydantic configuration for ContextConfig"""
         from_attributes = True
+        validate_assignment = True
 
 
 class MetaConfig(BaseModel):
@@ -90,8 +158,52 @@ class MetaConfig(BaseModel):
     created_at: str
     last_updated: str
 
+    @validator('created_by')
+    def validate_non_empty_string(cls, v):
+        """
+        Validates that string fields are not empty or whitespace.
+        
+        Args:
+            v (str): The string value to validate
+            
+        Returns:
+            str: The validated string
+            
+        Raises:
+            ValueError: If the string is empty or only whitespace
+        """
+        if not v or not v.strip():
+            raise ValueError("Author name cannot be empty or whitespace")
+        return v
+        
+    @validator('created_at', 'last_updated')
+    def validate_date_format(cls, v):
+        """
+        Validates date strings are in YYYY-MM-DD format.
+        
+        Args:
+            v (str): The date string to validate
+            
+        Returns:
+            str: The validated date string
+            
+        Raises:
+            ValueError: If the date string is improperly formatted
+        """
+        if not v or not v.strip():
+            raise ValueError("Date cannot be empty or whitespace")
+        
+        try:
+            # Attempt to parse the date
+            datetime.strptime(v, "%Y-%m-%d")
+        except ValueError:
+            raise ValueError("Date must be in YYYY-MM-DD format")
+        return v
+
     class Config:
+        """Pydantic configuration for MetaConfig"""
         from_attributes = True
+        validate_assignment = True
 
 
 class AbioConfig(BaseModel):
@@ -110,4 +222,6 @@ class AbioConfig(BaseModel):
     meta: MetaConfig
 
     class Config:
+        """Pydantic configuration for AbioConfig"""
         from_attributes = True
+        validate_assignment = True
