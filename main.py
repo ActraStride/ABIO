@@ -1,9 +1,4 @@
-from src.clients.gemini_client import GeminiClient
-from src.utils.setup_logging import setup_logging
-from src.chat.chat_session import ChatSession
-from src.config.agent_config import ConfigManager
-from src.context import ContextManager
-from src.embeddings import EmbeddingsGenerator
+from src.services.abio_service import ABIOService
 from pathlib import Path
 import logging
 
@@ -17,36 +12,20 @@ init(autoreset=True)
 console = Console()
 
 def main():
-    # Configuración avanzada de logging
-    project_root = Path("/home/actra_dev/Desktop/ABIO")
-    setup_logging(log_level="INFO", project_root=project_root)
-
-    logger = logging.getLogger("GeminiChat")
-
+    logger = logging.getLogger("ABIO_CLI")
+    
     try:
         # Mostrar cabecera visual
         console.print(Panel.fit("[bold cyan]🤖 Bienvenido al sistema de chat Actra[/bold cyan]\nEscribe 'salir' para terminar la sesión.", title="Actra CLI", subtitle="Actra Dev"))
 
-        # Cargar configuración del agente
-        config_manager = ConfigManager(config_path="Abiofile")  
-        config = config_manager.get_config()
-        logger.info("📄 Configuración cargada desde Abiofile:")
-        logger.info(config)
-
-        # Inicializar el cliente de Gemini
-        logger.info("Inicializando cliente de Gemini...")
-        client = GeminiClient(model_name=config.chat.default_model)
-
+        # Inicializar el servicio ABIO
+        service = ABIOService().initialize()
+        logger.info("🚀 Servicio ABIO inicializado correctamente")
+        
         # Crear una nueva sesión de chat
-        session_id = "12345"
-        context_manager = ContextManager(config.context.message_limit, config.context.context_messages)
-        chat_session: ChatSession = ChatSession(
-            session_id=session_id,
-            client=client,
-            context_manager=context_manager,
-            embeddings_generator=EmbeddingsGenerator()  
-        )
-
+        session_id = service.create_session()
+        config = service.config
+        
         logger.info(f"✅ Sesión de chat iniciada con ID: {session_id}")
         logger.info(f"🧠 Modelo activo: {config.chat.default_model}")
 
@@ -57,19 +36,18 @@ def main():
                 print(Fore.YELLOW + "👋 Terminando la sesión de chat. ¡Hasta luego!")
                 break
 
-            chat_session.add_message(role="user", content=user_input)
-            logger.info("💬 Generando respuesta del modelo...")
-
             try:
-                response_message = chat_session.generate_response(prompt=user_input)
+                # Usar el servicio para enviar mensajes
+                response_message = service.send_message(session_id, user_input)
                 print(Fore.GREEN + Style.BRIGHT + f"\n{config.agent.name}: {response_message.content}")
             except Exception as gen_error:
                 logger.error("Error generando respuesta del modelo: %s", gen_error)
                 print(Fore.RED + "⚠️ Ocurrió un error al generar la respuesta. Intenta de nuevo.")
 
         # Mostrar historial de la sesión
+        history = service.get_history(session_id)
         console.print("\n📜 [bold]Historial de la sesión:[/bold]")
-        for message in chat_session.get_history():
+        for message in history:
             role = message.role.capitalize()
             if message.role == "user":
                 print(Fore.CYAN + f"{role}: {message.content}")
@@ -81,9 +59,9 @@ def main():
         print(Fore.RED + f"Ocurrió un error inesperado: {e}")
 
     finally:
-        if 'client' in locals() and client:
-            client.close()
-            logger.info("🔒 Cliente Gemini cerrado correctamente.")
+        if 'service' in locals():
+            service.shutdown()
+            logger.info("🔒 Servicio ABIO cerrado correctamente")
 
 if __name__ == "__main__":
     main()
