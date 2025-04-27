@@ -185,9 +185,6 @@ class GeminiClient:
         """
         Checks if the specified model is supported for content generation.
 
-        Args:
-            model_name (str): The name of the model to check.
-
         Returns:
             bool: True if the model is supported, False otherwise.
         """
