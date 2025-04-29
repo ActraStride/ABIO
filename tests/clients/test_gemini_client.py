@@ -117,6 +117,74 @@ class TestGeminiClient(unittest.TestCase):
         self.mock_genai.configure.assert_called_once_with(api_key=TEST_API_KEY)
         self.mock_load_dotenv.assert_called_once()
 
+    def test_configure_api_failure(self) -> None:
+        """
+        Test API configuration failure handling.
+
+        Verifies that the client correctly handles exceptions during API configuration 
+        by converting them to RuntimeError with appropriate messages.
+
+        Raises:
+            AssertionError: If the exception is not properly caught and re-raised
+                           or if the error message doesn't match expectations.
+        """
+        # Configure the mock to raise an exception when genai.configure is called
+        self.mock_genai.configure.side_effect = Exception("SDK configuration error")
+        
+        # Attempt to initialize the client, which should trigger the exception
+        with self.assertRaises(RuntimeError) as context:
+            client = GeminiClient()
+        
+        # Verify the error message
+        self.assertIn("Gemini SDK configuration failed", str(context.exception))
+        
+        # Verify that the original exception is preserved as the cause
+        self.assertIsInstance(context.exception.__cause__, Exception)
+        self.assertEqual("SDK configuration error", str(context.exception.__cause__))
+        
+        # Verify that configure was called with the correct API key
+        self.mock_genai.configure.assert_called_once_with(api_key=TEST_API_KEY)
+        
+        # Verify that load_dotenv was called
+        self.mock_load_dotenv.assert_called_once()
+
+    def test_list_models_success(self) -> None:
+        """
+        Test successful retrieval of available models.
+        
+        Verifies that the client correctly retrieves and filters models
+        that support content generation from the Gemini API.
+        
+        Raises:
+            AssertionError: If the models aren't correctly filtered or returned,
+                           or if the SDK methods aren't called as expected.
+        """
+        # Setup mock models with various capabilities
+        mock_model1 = MagicMock()
+        mock_model1.name = "model-1"
+        mock_model1.supported_generation_methods = ["generateContent", "countTokens"]
+        
+        mock_model2 = MagicMock()
+        mock_model2.name = "model-2"
+        mock_model2.supported_generation_methods = ["generateContent"]
+        
+        mock_model3 = MagicMock()
+        mock_model3.name = "model-3"
+        mock_model3.supported_generation_methods = ["embedContent", "otherMethod"]
+        
+        # Configure the mock to return our test models
+        self.mock_genai.list_models.return_value = [mock_model1, mock_model2, mock_model3]
+        
+        # Create client and call list_models
+        client = GeminiClient()
+        result = client.list_models()
+        
+        # Verify the results - only models with generateContent should be included
+        self.assertEqual(["model-1", "model-2"], result)
+        
+        # Verify that list_models was called exactly once
+        self.mock_genai.list_models.assert_called_once()
+
 
 if __name__ == '__main__':
     unittest.main()
