@@ -1,7 +1,7 @@
-# 🤖 ABIO — Chatbot con Modelos Generativos
+<h1 align="center">🤖 ABIO — Plataforma de Orquestación de Herramientas de IA</h1>
 
 <p align="center">
-  Una plataforma de IA conversacional que integra APIs de <strong>Gemini</strong> y <strong>Claude</strong>, con seguimiento de contexto, registro de actividad (logging) y un diseño modular robusto.
+  Una plataforma avanzada de orquestación que unifica y coordina servicios de inteligencia artificial, integrando las APIs de <strong>Gemini</strong> y <strong>Claude</strong> con capacidades de búsqueda semántica, coordinación de herramientas y gestión robusta de contexto.
 </p>
 
 ---
@@ -17,30 +17,63 @@
 │   ├── chat/              # Gestión de sesiones de chat
 │   ├── clients/           # Clientes API para Gemini y Claude
 │   ├── config/            # Configuración del proyecto
-│   ├── context/           # Manejo del contexto de conversación
-│   ├── errors/            # Tipos de error personalizados
+│   ├── context/           # Manejo del contexto conversacional
+│   ├── embeddings/        # Generación de vectores de embeddings
+│   ├── errors/            # Tipos de errores personalizados
+│   ├── faiss/             # Implementación de búsqueda vectorial
 │   ├── models/            # Modelos de datos (Pydantic)
 │   ├── services/          # Servicios auxiliares
-│   └── utils/             # Funciones de utilidad (ej., registro de actividad)
+│   ├── tools/             # Interfaces con herramientas externas
+│   └── utils/             # Funciones utilitarias
 ├── tests/                 # Pruebas unitarias
 ├── main.py                # Punto de entrada principal
+├── Abiofile               # Especificación de configuración
 ├── requirements.txt       # Dependencias de Python
 ├── Dockerfile             # Configuración del contenedor Docker
-├── docker-compose.yml     # Orquestación de Docker
-└── .env                   # Claves API y variables de entorno
+├── docker-compose.yml     # Orquestación con Docker
+└── .env                   # Llaves API y variables de entorno
 ```
 
 ---
 
 ## ⚙️ Requisitos Previos
 
-- Python **3.10+**
+- Python **3.10 o superior**
 - Opcional: **Docker** (para despliegue en contenedor)
-- Claves API para:
+- Llaves API para:
   - 🔑 **Gemini**
   - 🔐 **Claude (Anthropic)**
+  - 🔍 **Modelos de embeddings** (si usas embeddings personalizados)
 
-> Guarda tus claves de forma segura en un archivo `.env`.
+> Guarda tus llaves de forma segura en un archivo `.env` o configúralas en el archivo Abiofile.
+
+---
+
+## 🌟 Funcionalidades Principales
+
+- 🔀 **Orquestación de Herramientas**  
+  El propósito principal de ABIO es coordinar y estandarizar el acceso a herramientas y servicios externos de IA.
+
+- 🧰 **Interfaz Unificada de Herramientas**  
+  Interfaces estandarizadas para todas las herramientas integradas mediante el módulo `tools` como orquestador central.
+
+- 🔄 **Gestión de Sesiones de Chat**  
+  Administra conversaciones con `ChatSession` en [`chat_session.py`](src/chat/chat_session.py).
+
+- 🌐 **Integración con Múltiples LLMs**  
+  Cambia sin problemas entre diferentes modelos como Gemini y Claude según las necesidades específicas.
+
+- 🧠 **Gestión de Contexto**  
+  Mantiene el estado de la conversación entre diferentes invocaciones de herramientas con `ContextManager`.
+
+- 📊 **Sistema de Embeddings Vectoriales**  
+  Convierte texto a representaciones vectoriales mediante [`EmbeddingsGenerator`](src/embeddings/embeddings_generator.py).
+
+- 🔍 **Búsqueda Semántica con FAISS**  
+  Capacidades de búsqueda eficiente basada en vectores con [`FAISSManager`](src/faiss/faiss_manager.py).
+
+- ⚙️ **Configuración Flexible**  
+  Configura el sistema usando el archivo `Abiofile`, gestionado por `ConfigManager`.
 
 ---
 
@@ -61,28 +94,30 @@ source venv/bin/activate     # En Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-### 3. Añade tus Claves API
+### 3. Agrega tus Llaves API
 
 Crea un archivo `.env` en el directorio raíz:
 
 ```env
-GEMINI_API_KEY=your_gemini_api_key
-ANTHROPIC_API_KEY=your_claude_api_key
+GEMINI_API_KEY=tu_clave_gemini
+ANTHROPIC_API_KEY=tu_clave_claude
 ```
 
 ---
 
 ## 💬 Uso
 
-Inicia una sesión de chat con:
+Inicia la plataforma ABIO con:
 
 ```bash
 python main.py
 ```
 
+Configura las herramientas y servicios en tu archivo `Abiofile` para personalizar el comportamiento de orquestación.
+
 ---
 
-## 🧪 Ejecutando Pruebas
+## 🧪 Ejecución de Pruebas
 
 Ejecuta todas las pruebas unitarias con:
 
@@ -108,33 +143,29 @@ docker-compose up
 
 ---
 
-## 🌟 Características Clave
+## 🔌 Extender ABIO
 
-- 🔄 **Gestión de Sesiones de Chat**
-  Gestiona conversaciones con `ChatSession` en [`chat_session.py`](src/chat/chat_session.py).
+ABIO está diseñado para ser extensible con nuevas herramientas y capacidades:
 
-- 🌐 **Integración de APIs Generativas**
-  Utiliza `GeminiClient` y `ClaudeClient` para una interacción avanzada con modelos de IA.
+1. Implementa la interfaz estándar de herramientas en el módulo `tools`
+2. Registra tu herramienta en el orquestador
+3. Configura sus parámetros en el archivo `Abiofile`
 
-- 🧠 **Memoria de Contexto**
-  Mantiene el historial de mensajes con `ContextManager`.
-
-- 📝 **Sistema de Registro de Actividad (Logging)**
-  Registra logs detallados a través de `setup_logging.py`.
+Consulta la documentación para ver las guías de extensión detalladas.
 
 ---
 
 ## 🤝 Contribuciones
 
-¡Las contribuciones son bienvenidas!
-Siéntete libre de bifurcar (fork) el repositorio y enviar pull requests.
+¡Las contribuciones son bienvenidas!  
+No dudes en hacer un fork del repositorio y enviar pull requests.
 
-> Por favor, abre un issue primero para discutir cambios importantes o nuevas funcionalidades.
+> Por favor, abre primero un issue para discutir cambios importantes o nuevas funcionalidades.
 
 ---
 
 ## 📄 Licencia
 
-Este proyecto está licenciado bajo la **Licencia MIT**.
+Este proyecto está licenciado bajo la **Licencia MIT**.  
 Consulta el archivo [LICENSE](LICENSE) para más detalles.
-```
+

@@ -1,14 +1,15 @@
-<h1 align="center">🤖 ABIO — Chatbot with Generative Models</h1>
+
+<h1 align="center">🤖 ABIO — AI Tool Orchestration Platform</h1>
 
 <p align="center">
-  A conversational AI platform integrating <strong>Gemini</strong> and <strong>Claude</strong> APIs, with context tracking, logging, and robust modular design.
+  An advanced orchestration platform that unifies and coordinates AI services, integrating <strong>Gemini</strong> and <strong>Claude</strong> APIs with semantic search capabilities, tool coordination, and robust context management.
 </p>
 
----
+
 
 ## 📁 Project Structure
 
-```
+```bash
 .
 ├── data/                  # Input/output data
 ├── docs/                  # Project documentation
@@ -18,12 +19,16 @@
 │   ├── clients/           # API clients for Gemini & Claude
 │   ├── config/            # Project configuration
 │   ├── context/           # Conversation context handling
+│   ├── embeddings/        # Vector embeddings generation
 │   ├── errors/            # Custom error types
+│   ├── faiss/             # Vector search implementation
 │   ├── models/            # Data models (Pydantic)
 │   ├── services/          # Auxiliary services
-│   └── utils/             # Utility functions (e.g., logging)
+│   ├── tools/             # External tool interfaces
+│   └── utils/             # Utility functions
 ├── tests/                 # Unit tests
 ├── main.py                # Main entry point
+├── Abiofile               # Configuration specification
 ├── requirements.txt       # Python dependencies
 ├── Dockerfile             # Docker container config
 ├── docker-compose.yml     # Docker orchestration
@@ -39,8 +44,37 @@
 - API Keys for:
   - 🔑 **Gemini**
   - 🔐 **Claude (Anthropic)**
+  - 🔍 **Embedding models** (if using custom embeddings)
 
-> Store your keys securely in a `.env` file.
+> Store your keys securely in a `.env` file or configure via Abiofile.
+
+---
+
+## 🌟 Key Features
+
+- 🔀 **Tool Orchestration**  
+  ABIO's core purpose is to coordinate and standardize access to external AI tools and services.
+
+- 🧰 **Unified Tool Interface**  
+  Standardized interfaces for all integrated tools with the `tools` module acting as a central orchestrator.
+
+- 🔄 **Chat Session Management**  
+  Manage conversations with `ChatSession` in [`chat_session.py`](src/chat/chat_session.py).
+
+- 🌐 **Multiple LLM Integration**  
+  Switch seamlessly between different AI models like Gemini and Claude based on specific needs.
+
+- 🧠 **Context Management**  
+  Maintain conversation state across different tool invocations with `ContextManager`.
+
+- 📊 **Vector Embeddings System**  
+  Convert text to vector representations using [`EmbeddingsGenerator`](src/embeddings/embeddings_generator.py).
+
+- 🔍 **Semantic Search with FAISS**  
+  Efficient vector-based search capabilities through [`FAISSManager`](src/faiss/faiss_manager.py).
+
+- ⚙️ **Flexible Configuration**  
+  Configure the system using the `Abiofile` specification managed by `ConfigManager`.
 
 ---
 
@@ -70,15 +104,18 @@ GEMINI_API_KEY=your_gemini_api_key
 ANTHROPIC_API_KEY=your_claude_api_key
 ```
 
+
 ---
 
 ## 💬 Usage
 
-Start a chat session with:
+Start the ABIO platform with:
 
 ```bash
 python main.py
 ```
+
+Configure tools and services in your Abiofile to customize orchestration behavior.
 
 ---
 
@@ -108,19 +145,15 @@ docker-compose up
 
 ---
 
-## 🌟 Key Features
+## 🔌 Extending ABIO
 
-- 🔄 **Chat Session Management**  
-  Manage conversations with `ChatSession` in [`chat_session.py`](src/chat/chat_session.py).
+ABIO is designed to be extended with new tools and capabilities:
 
-- 🌐 **Generative API Integration**  
-  Use `GeminiClient` and `ClaudeClient` for advanced AI model interaction.
+1. Implement the standard tool interface in the `tools` module
+2. Register your tool with the orchestrator
+3. Configure usage parameters in your Abiofile
 
-- 🧠 **Context Memory**  
-  Maintain message history with `ContextManager`.
-
-- 📝 **Logging System**  
-  Record detailed logs via `setup_logging.py`.
+See documentation for detailed extension guidelines.
 
 ---
 
