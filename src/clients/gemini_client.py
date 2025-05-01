@@ -177,6 +177,8 @@ class GeminiClient:
         except genai.exceptions.GenerationError as e:
             self.logger.error("Error during text generation: %s", e)
             raise RuntimeError("Text generation failed due to an SDK error.") from e
+        except RuntimeError:
+            raise
         except Exception as e:
             self.logger.error("Unexpected error during text generation: %s", e)
             raise RuntimeError("An unexpected error occurred during text generation.") from e

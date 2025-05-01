@@ -35,6 +35,8 @@ from src.clients.gemini_client import GeminiClient
 import tests.helpers.mock_clients as mock_helpers
 
 TEST_API_KEY = "test_api_key_from_setup"
+TEST_DEFAULT_MODEL_NAME = "gemini-1.5-flash"
+
 
 class TestGeminiClient(unittest.TestCase):
     """
@@ -272,7 +274,246 @@ class TestGeminiClient(unittest.TestCase):
         
         # Verify that count_tokens was called with the correct input text
         mock_model.count_tokens.assert_called_once_with("Hello, world!")
+
+    def test_count_tokens_failure(self) -> None:
+        """
+        Test failure handling when counting tokens.
         
+        Verifies that the client correctly handles exceptions during token counting
+        by converting them to RuntimeError with appropriate messages.
+        
+        Raises:
+            AssertionError: If the exception is not properly caught and re-raised
+                           or if the error message doesn't match expectations.
+        """
+        # Configure the mock model instance to raise an exception
+        mock_model = MagicMock()
+        self.mock_genai.GenerativeModel.return_value = mock_model
+        mock_model.count_tokens.side_effect = Exception("API error")
+        
+        # Create client and attempt to call count_tokens
+        client = GeminiClient()
+        
+        # Verify that the exception is caught and re-raised as RuntimeError
+        with self.assertRaises(RuntimeError) as context:
+            client.count_tokens("Hello, world!")
+        
+        # Verify the error message matches the implementation
+        self.assertEqual("Failed to count tokens.", str(context.exception))
+        
+        # Verify that the original exception is preserved as the cause
+        self.assertIsInstance(context.exception.__cause__, Exception)
+        self.assertEqual("API error", str(context.exception.__cause__))
+        
+        # Verify that GenerativeModel was called with the correct model name
+        self.mock_genai.GenerativeModel.assert_called_once_with("gemini-1.5-flash")
+        
+        # Verify that count_tokens was called with the correct input text
+        mock_model.count_tokens.assert_called_once_with("Hello, world!")
+
+    def test_generate_text_empty_prompt(self) -> None:
+        """
+        Test text generation with empty prompt input.
+        
+        Verifies that the client correctly raises a ValueError when attempting
+        to generate text with an empty prompt, validating that input validation
+        works as expected before any API calls are made.
+        
+        Raises:
+            AssertionError: If the expected ValueError is not raised or
+                           if the error message doesn't match expectations.
+        """
+        # Create a client instance
+        client = GeminiClient()
+        
+        # Attempt to generate text with empty prompt, which should raise ValueError
+        with self.assertRaises(ValueError) as context:
+            client.generate_text("")
+        
+        # Verify the exact error message from the implementation
+        self.assertEqual("Prompt cannot be empty or whitespace.", str(context.exception))
+        
+        # Verify the GenerativeModel was not instantiated since validation happens first
+        self.mock_genai.GenerativeModel.assert_not_called()
+
+    def test_generate_text_success(self) -> None:
+        """
+        Test successful text generation operation.
+        
+        Verifies that the client correctly generates text using the
+        specified model and returns a properly formatted RawResponse object.
+        
+        Raises:
+            AssertionError: If the generated text doesn't match expectations,
+                           or if the SDK methods aren't called as expected.
+        """
+        # Configure the mock model instance to return a response with text
+        mock_model = MagicMock()
+        self.mock_genai.GenerativeModel.return_value = mock_model
+        
+        # Mock the count_tokens method to avoid its complexity in this test
+        client = GeminiClient()
+        client.count_tokens = MagicMock()
+        client.count_tokens.return_value = 10  # Mock token count for both prompt and response
+        
+        # Mock the generate_content response
+        mock_response = MagicMock()
+        mock_response.text = "Generated response text"
+        mock_response.metadata = {"some": "metadata"}
+        mock_model.generate_content.return_value = mock_response
+        
+        # Call generate_text
+        result = client.generate_text("Hello, world!")
+        
+        # Verify the result properties
+        self.assertEqual("Generated response text", result.generated_text)
+        self.assertEqual(10, result.prompt_tokens)
+        self.assertEqual(10, result.response_tokens)
+        self.assertEqual("gemini-1.5-flash", result.model_name)
+        self.assertEqual({"some": "metadata"}, result.metadata)
+        
+        # Verify that GenerativeModel was called with the correct model name
+        self.mock_genai.GenerativeModel.assert_called_once_with("gemini-1.5-flash")
+        
+        # Verify that generate_content was called with the correct input text
+        mock_model.generate_content.assert_called_once_with("Hello, world!")
+        
+        # Verify that count_tokens was called twice (once for prompt, once for response)
+        self.assertEqual(2, client.count_tokens.call_count)
+
+    def test_generate_text_empty_response(self) -> None:
+        """
+        Test handling of empty responses from the model.
+        
+        Verifies that the client correctly raises a RuntimeError when the model
+        returns an empty response.
+        
+        Raises:
+            AssertionError: If the exception is not properly raised or
+                           if the error message doesn't match expectations.
+        """
+        # Configure the mock model instance to return an empty response
+        mock_model = MagicMock()
+        self.mock_genai.GenerativeModel.return_value = mock_model
+        
+        # Mock the count_tokens method to avoid its complexity in this test
+        client = GeminiClient()
+        client.count_tokens = MagicMock()
+        client.count_tokens.return_value = 10  # Mock token count
+        
+        # Mock an empty response
+        mock_empty_response = MagicMock()
+        mock_empty_response.text = ""  # Empty text
+        mock_model.generate_content.return_value = mock_empty_response
+        
+        # Verify RuntimeError is raised with correct message
+        with self.assertRaises(RuntimeError) as context:
+            client.generate_text("Hello, world!")
+        
+        # Verify the error message
+        self.assertEqual("Received empty response from the model.", str(context.exception))
+
+    def test_generate_text_model_not_found(self) -> None:
+        """
+        Test handling when the specified model is not found.
+        
+        Verifies that the client correctly handles ModelNotFoundError exceptions
+        by re-raising them as RuntimeError with appropriate messages.
+        
+        Raises:
+            AssertionError: If the exception is not properly caught and re-raised
+                           or if the error message doesn't match expectations.
+        """
+        # Configure the mock model to raise ModelNotFoundError
+        mock_model = MagicMock()
+        self.mock_genai.GenerativeModel.return_value = mock_model
+        
+        # Mock the count_tokens method to avoid its complexity in this test
+        client = GeminiClient()
+        client.count_tokens = MagicMock()
+        client.count_tokens.return_value = 10
+        
+        # Create a ModelNotFoundError
+        model_error = self.mock_genai.exceptions.ModelNotFoundError("Model not available")
+        mock_model.generate_content.side_effect = model_error
+        
+        # Verify RuntimeError is raised with correct message
+        with self.assertRaises(RuntimeError) as context:
+            client.generate_text("Hello, world!")
+        
+        # Verify the error message contains the model name
+        self.assertIn(f"Model '{TEST_DEFAULT_MODEL_NAME}' not found", str(context.exception))
+        
+        # Verify that the original exception is preserved as the cause
+        self.assertIs(context.exception.__cause__, model_error)
+
+    def test_generate_text_generation_error(self) -> None:
+        """
+        Test handling of generation errors from the SDK.
+        
+        Verifies that the client correctly handles GenerationError exceptions
+        by re-raising them as RuntimeError with appropriate messages.
+        
+        Raises:
+            AssertionError: If the exception is not properly caught and re-raised
+                           or if the error message doesn't match expectations.
+        """
+        # Configure the mock model to raise GenerationError
+        mock_model = MagicMock()
+        self.mock_genai.GenerativeModel.return_value = mock_model
+        
+        # Mock the count_tokens method to avoid its complexity in this test
+        client = GeminiClient()
+        client.count_tokens = MagicMock()
+        client.count_tokens.return_value = 10
+        
+        # Create a GenerationError
+        generation_error = self.mock_genai.exceptions.GenerationError("Content generation failed")
+        mock_model.generate_content.side_effect = generation_error
+        
+        # Verify RuntimeError is raised with correct message
+        with self.assertRaises(RuntimeError) as context:
+            client.generate_text("Hello, world!")
+        
+        # Verify the error message
+        self.assertEqual("Text generation failed due to an SDK error.", str(context.exception))
+        
+        # Verify that the original exception is preserved as the cause
+        self.assertIs(context.exception.__cause__, generation_error)
+
+    def test_generate_text_unexpected_error(self) -> None:
+        """
+        Test handling of unexpected errors during text generation.
+        
+        Verifies that the client correctly handles general exceptions
+        by re-raising them as RuntimeError with appropriate messages.
+        
+        Raises:
+            AssertionError: If the exception is not properly caught and re-raised
+                           or if the error message doesn't match expectations.
+        """
+        # Configure the mock model to raise an unexpected exception
+        mock_model = MagicMock()
+        self.mock_genai.GenerativeModel.return_value = mock_model
+        
+        # Mock the count_tokens method to avoid its complexity in this test
+        client = GeminiClient()
+        client.count_tokens = MagicMock()
+        client.count_tokens.return_value = 10
+        
+        # Create an unexpected exception
+        unexpected_error = Exception("Unexpected failure")
+        mock_model.generate_content.side_effect = unexpected_error
+        
+        # Verify RuntimeError is raised with correct message
+        with self.assertRaises(RuntimeError) as context:
+            client.generate_text("Hello, world!")
+        
+        # Verify the error message
+        self.assertEqual("An unexpected error occurred during text generation.", str(context.exception))
+        
+        # Verify that the original exception is preserved as the cause
+        self.assertIs(context.exception.__cause__, unexpected_error)
 
 if __name__ == '__main__':
     unittest.main()
