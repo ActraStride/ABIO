@@ -185,6 +185,94 @@ class TestGeminiClient(unittest.TestCase):
         # Verify that list_models was called exactly once
         self.mock_genai.list_models.assert_called_once()
 
+    def test_list_models_failure(self) -> None:
+        """
+        Test failure handling when retrieving available models.
+        
+        Verifies that the client correctly handles exceptions during model listing
+        by converting them to RuntimeError with appropriate messages.
+        
+        Raises:
+            AssertionError: If the exception is not properly caught and re-raised
+                           or if the error message doesn't match expectations.
+        """
+        # Configure the mock to raise an exception when list_models is called
+        self.mock_genai.list_models.side_effect = Exception("API error")
+        
+        # Create client and attempt to call list_models
+        client = GeminiClient()
+        
+        # Verify that the exception is caught and re-raised as RuntimeError
+        with self.assertRaises(RuntimeError) as context:
+            client.list_models()
+        
+        # Verify the error message
+        self.assertIn("Failed to fetch models.", str(context.exception))
+        
+        # Verify that the original exception is preserved as the cause
+        self.assertIsInstance(context.exception.__cause__, Exception)
+        self.assertEqual("API error", str(context.exception.__cause__))
+        
+        # Verify that list_models was called exactly once
+        self.mock_genai.list_models.assert_called_once()
+
+    def test_count_tokens_empty_text(self) -> None:
+        """
+        Test token counting behavior with empty text input.
+        
+        Verifies that the client correctly raises a ValueError when attempting
+        to count tokens in an empty string, validating that input validation
+        works as expected before any API calls are made.
+        
+        Raises:
+            AssertionError: If the expected ValueError is not raised or
+                           if the error message doesn't match expectations.
+        """
+        # Create a client instance
+        client = GeminiClient()
+        
+        # Attempt to count tokens with empty text, which should raise ValueError
+        with self.assertRaises(ValueError) as context:
+            client.count_tokens("")
+        
+        # Verify the exact error message from the implementation
+        self.assertEqual("Text cannot be empty or whitespace.", str(context.exception))
+        
+        # Verify the GenerativeModel was not instantiated since validation happens first
+        self.mock_genai.GenerativeModel.assert_not_called()
+
+    def test_count_tokens_success(self) -> None:
+        """
+        Test successful token counting operation.
+        
+        Verifies that the client correctly counts tokens in text using the
+        configured model and returns the expected token count from the API.
+        
+        Raises:
+            AssertionError: If the token count doesn't match the expected value,
+                           or if the SDK methods aren't called as expected.
+        """
+        # Configure the mock model instance to return a response with token count
+        mock_model = MagicMock()
+        self.mock_genai.GenerativeModel.return_value = mock_model
+        
+        mock_response = MagicMock()
+        mock_response.total_tokens = 10
+        mock_model.count_tokens.return_value = mock_response
+        
+        # Create client and call count_tokens
+        client = GeminiClient()
+        token_count = client.count_tokens("Hello, world!")
+        
+        # Verify the token count matches the expected value
+        self.assertEqual(10, token_count)
+        
+        # Verify that GenerativeModel was called with the correct model name
+        self.mock_genai.GenerativeModel.assert_called_once_with("gemini-1.5-flash")
+        
+        # Verify that count_tokens was called with the correct input text
+        mock_model.count_tokens.assert_called_once_with("Hello, world!")
+        
 
 if __name__ == '__main__':
     unittest.main()
