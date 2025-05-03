@@ -1,11 +1,34 @@
 """
+Module: mock_clients
+
 Helper module for creating mock clients for testing.
 
 This module provides factory functions for creating consistently configured
-mock objects of various API clients used in the ABIO system.
-
-It also injects mock exception classes into the mocked SDK (e.g., genai.exceptions)
+mock objects of various API clients used in the ABIO system. It also injects 
+mock exception classes into the mocked SDK (e.g., genai.exceptions)
 to support error-handling tests without relying on the real SDK.
+
+Example:
+    >>> from tests.helpers.mock_clients import setup_gemini_mocks, teardown_gemini_mocks
+    >>> 
+    >>> # Create mocks for testing
+    >>> mocks = setup_gemini_mocks()
+    >>> 
+    >>> # Run tests with mocked dependencies
+    >>> from src.clients.gemini_client import GeminiClient
+    >>> client = GeminiClient()
+    >>> 
+    >>> # Make assertions using mocks
+    >>> assert mocks["mocks"]["genai"].GenerativeModel.called
+    >>> 
+    >>> # Clean up after tests
+    >>> teardown_gemini_mocks(mocks)
+
+Dependencies:
+    - unittest.mock (patch, MagicMock)
+    - os
+    - types
+    - typing
 """
 
 from unittest.mock import patch, MagicMock
