@@ -514,6 +514,71 @@ class TestGeminiClient(unittest.TestCase):
         
         # Verify that the original exception is preserved as the cause
         self.assertIs(context.exception.__cause__, unexpected_error)
+    
+    def test_is_model_supported_true(self) -> None:
+        """
+        Test successful verification of model support.
+        
+        Verifies that the client correctly identifies when its model_name
+        is present in the list of available models.
+        
+        Raises:
+            AssertionError: If the method doesn't return True when the model is available,
+                           or if the list_models method isn't called as expected.
+        """
+        # Create client instance
+        client = GeminiClient(model_name=TEST_DEFAULT_MODEL_NAME)
+        
+        # Mock the list_models method to return a list including our model name
+        with patch.object(GeminiClient, 'list_models', return_value=["gemini-1.5-flash", "gemini-1.0-pro"]):
+            # Call is_model_supported and verify it returns True
+            result = client.is_model_supported()
+            self.assertTrue(result)
+    
+    def test_is_model_supported_false(self) -> None:
+        """
+        Test verification of model support when model is unavailable.
+        
+        Verifies that the client correctly identifies when its model_name
+        is not present in the list of available models.
+        
+        Raises:
+            AssertionError: If the method doesn't return False when the model is unavailable,
+                           or if the list_models method isn't called as expected.
+        """
+        # Create client instance
+        client = GeminiClient(model_name="unavailable-model")
+        
+        # Mock the list_models to return a list that doesn't include our model
+        with patch.object(GeminiClient, 'list_models', return_value=["gemini-1.5-flash", "gemini-1.0-pro"]):
+            # Call is_model_supported and verify it returns False
+            result = client.is_model_supported()
+            self.assertFalse(result)
+    
+    def test_is_model_supported_error_handling(self) -> None:
+        """
+        Test error handling in model support verification.
+        
+        Verifies that the client correctly handles RuntimeError exceptions that may occur
+        during model list retrieval by returning False.
+        
+        Raises:
+            AssertionError: If the method doesn't return False when an error occurs.
+        """
+        # Create client instance
+        client = GeminiClient()
+        
+        # Mock the list_models method to raise a RuntimeError
+        with patch.object(GeminiClient, 'list_models', side_effect=RuntimeError("Test error")):
+            # Call is_model_supported and verify it returns False
+            result = client.is_model_supported()
+            self.assertFalse(result)
+
+    
+   
+
+  
+
 
 if __name__ == '__main__':
     unittest.main()
