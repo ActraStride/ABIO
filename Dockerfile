@@ -9,5 +9,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copia el resto del proyecto al contenedor
 COPY . .
 
-# Comando por defecto: abre una terminal interactiva
-CMD ["sh"]
+
+EXPOSE 8001
+
+CMD ["uvicorn", "api_main:app", "--host", "0.0.0.0", "--port", "8001", "--reload"]

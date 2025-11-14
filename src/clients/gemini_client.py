@@ -33,7 +33,8 @@ from typing import List, Optional, Dict, Any
 from IPython.display import Markdown
 
 from src.models.raw_response import RawResponse
-
+# ... (otras importaciones)
+from src.models.message import Message
 DEFAULT_MODEL_NAME = "gemini-1.5-flash"
 
 class GeminiClient:

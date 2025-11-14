@@ -5,3 +5,6 @@ ipython
 sentence-transformers
 colorama
 rich
+fastapi
+uvicorn[standard]
+# ... y tus otras dependencias
